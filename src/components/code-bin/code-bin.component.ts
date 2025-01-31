@@ -17,7 +17,7 @@ import { SharedService } from '../../services/shared.service';
 })
 export class CodeBinComponent implements OnInit {
   constructor(private router: Router, public service: SharedService) {
-    console.log('Home', this.service.loginOrNotLoggedIn);
+   
   }
   title = new FormControl('', [Validators.required]);
   code = new FormControl('', [Validators.required]);
@@ -52,20 +52,23 @@ export class CodeBinComponent implements OnInit {
   }
   onViewSubmit() {
     if (this.binForm.valid) {
-      console.log('View submitted:', this.binForm.value);
+   
       this.router.navigate(['/view'], {
         queryParams: {
           timeStamp: this.timestamp,
-          editedValues: this.editedValues,
+          
+          id: this.editedValues.id,
+          title: this.editedValues.title,
+          code: this.editedValues.code,
         },
       });
       // Add your submission logic here
-      console.log(this.editedValues,"adhagfdvbadca");
+      console.log(this.editedValues, 'edited values');
     }
   }
   ngOnInit() {
     this.editUserData = this.service.getCodeBinToEdit();
-    console.log('editUserData', this.editUserData);
+    
     if (this.router.url.includes('edit')) {
       this.binForm.patchValue({
         title: this.editUserData.title,

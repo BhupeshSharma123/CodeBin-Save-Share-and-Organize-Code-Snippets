@@ -26,11 +26,17 @@ export class DataViewComponent implements OnInit {
     this.loadCodeBins();
     this.route.queryParams.subscribe((params) => {
       const timeStamp = params['timeStamp'];
-      const editedValues = params['editedValues'];
+      const editedValues = {
+        id: params['id'],
+        title: params['title'],
+        code: params['code'],
+      };
       this.timeStamp = timeStamp;
       this.values = editedValues;
-      // Example: 1 'active'
-      console.log(this.timeStamp);
+
+      console.log(this.values, 'received edited values');
+      
+      this.service.saveCodeBin(this.values);
       
     });
   }
@@ -48,7 +54,7 @@ export class DataViewComponent implements OnInit {
   editCodeBin(id: number): void {
     this.service.checkEdit = true;
     const codeBin = this.service.getCodeBinById(id);
-    console.log('codeBin', codeBin);
+
     if (codeBin) {
       this.service.setCodeBinToEdit(codeBin); // Store the code bin in the service
       this.router.navigate(['/edit', id]); // Navigate to the edit page
