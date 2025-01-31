@@ -1,0 +1,52 @@
+<div class="container mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-6 text-gray-800">Code Bins</h1>
+
+  <!-- No Data Message -->
+  <div *ngIf="codeBins.length === 0" class="text-gray-600">
+    No code bins found. Create one to get started!
+    <button
+      (click)="createBin()"
+      class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    >
+      Create CodeBin
+    </button>
+  </div>
+
+  <!-- Code Bin List -->
+  <div
+    *ngFor="let bin of codeBins"
+    class="mb-6 p-6 bg-white rounded-lg shadow-md"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-gray-800">{{ bin.title }}</h2>
+      <div class="space-x-2">
+        <!-- Edit Button -->
+        <button
+          (click)="editCodeBin(bin.id)"
+          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+        >
+          Edit
+        </button>
+        <!-- Delete Button -->
+        <button
+          (click)="deleteCodeBin(bin.id)"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Timestamp -->
+    <div class="text-sm text-gray-500 mb-4">
+      Last Updated: {{ this.timeStamp| date: 'medium' }}
+    </div>
+
+    <!-- Code Display -->
+    <pre
+      class="bg-gray-100 p-4 rounded-md text-sm text-gray-700 font-mono overflow-x-auto"
+    >
+      <code>{{ bin.code }}</code>
+    </pre>
+  </div>
+</div>

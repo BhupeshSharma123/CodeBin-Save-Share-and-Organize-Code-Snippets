@@ -1,0 +1,73 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+  <!-- Header -->
+
+  <!-- Hero Section -->
+  <section class="text-center py-20">
+    <div class="max-w-2xl mx-auto px-4">
+      <h1 class="text-5xl font-bold text-gray-800 mb-6">
+        Share and Save Code Snippets
+      </h1>
+      <p class="text-lg text-gray-600 mb-8">
+        CodeBin is your go-to platform for saving, sharing, and organizing code
+        snippets. Whether you're a developer, student, or hobbyist, CodeBin
+        makes it easy to manage your code.
+      </p>
+      <div class="space-x-4">
+        @if (service.loginOrNotLoggedIn) {
+        <!-- Logged In State -->
+        <a
+          routerLink="/bin"
+          class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Create a Bin
+        </a>
+        <a
+          routerLink="/view"
+          class="inline-block border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+        >
+          View My Bins
+        </a>
+        } @else {
+        <!-- Not Logged In State -->
+        <a
+          routerLink="/login"
+          class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Get Started
+        </a>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Bins Section (unchanged) -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8">Recent Code Bins</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        *ngFor="let bin of recentBins"
+        class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+      >
+        <div class="p-6">
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">
+            {{ bin.title }}
+          </h3>
+          <p class="text-gray-600 mb-4">
+            {{ bin.description || "No description provided." }}
+          </p>
+          <div class="flex justify-between items-center">
+            <a
+              [routerLink]="['/bin', bin.id]"
+              class="text-blue-600 hover:underline"
+            >
+              View Bin
+            </a>
+            <span class="text-sm text-gray-500">
+              {{ bin.date }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

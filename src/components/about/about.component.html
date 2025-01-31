@@ -1,0 +1,39 @@
+<!-- about.component.html -->
+<div class="about-container">
+  <h1>About Our Application</h1>
+
+  <section class="mission-section">
+    <h2>Our Mission</h2>
+    <p>
+      We are dedicated to providing the best user experience through innovative
+      solutions and cutting-edge technology. Our goal is to simplify complex
+      tasks and empower users to achieve more.
+    </p>
+  </section>
+
+  <section class="features-section">
+    <h2>Key Features</h2>
+    <ul>
+      <li *ngFor="let feature of features">{{ feature }}</li>
+    </ul>
+  </section>
+
+  <section class="team-section">
+    <h2>Meet Our Team</h2>
+    <div class="team-grid">
+      <div class="team-member" *ngFor="let member of teamMembers">
+        <h3>{{ member.name }}</h3>
+        <p class="role">{{ member.role }}</p>
+        <p class="bio">{{ member.bio }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact-section">
+    <h2>Contact Us</h2>
+    <p>
+      Have questions? Reach out to us at
+      <a href="mailto:support@example.com">support.com</a>
+    </p>
+  </section>
+</div>
