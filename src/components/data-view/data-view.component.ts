@@ -36,7 +36,8 @@ export class DataViewComponent implements OnInit {
   }
   loadCodeBins(): void {
     const storedData = localStorage.getItem('codeBins');
-    this.codeBins = storedData ? JSON.parse(storedData) : [];
+    this.codeBins = storedData ? JSON.parse(storedData) : [''];
+
   }
 
   deleteCodeBin(id: number): void {
