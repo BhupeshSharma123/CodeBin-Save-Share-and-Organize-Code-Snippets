@@ -1,5 +1,13 @@
 <div class="container mx-auto p-6">
-  <h1 class="text-3xl font-bold mb-6 text-gray-800">Code Bins</h1>
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Code Bins</h1>
+    <button *ngIf="codeBins.length !== 0"
+      (click)="createBin()"
+      class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    >
+      Create CodeBin
+    </button>
+  </div>
 
   <!-- No Data Message -->
   <div *ngIf="codeBins.length === 0" class="text-gray-600">
@@ -39,7 +47,7 @@
 
     <!-- Timestamp -->
     <div class="text-sm text-gray-500 mb-4">
-      Last Updated: {{ this.timeStamp| date: 'medium' }}
+      Last Updated: {{ this.timeStamp | date : "medium" }}
     </div>
 
     <!-- Code Display -->

@@ -6,7 +6,7 @@ import { SharedService } from '../../services/shared.service';
 interface CodeBin {
   id: string;
   title: string;
-  description?: string;
+  code: string;
   date: Date;
 }
 
@@ -17,30 +17,12 @@ interface CodeBin {
   imports: [RouterLink, CommonModule],
 })
 export class HomeComponent implements OnInit {
-  recentBins: CodeBin[] = [
-    {
-      id: '1',
-      title: 'React Todo App',
-      description: 'A simple todo app built with React and Tailwind CSS.',
-      date: new Date('2023-10-01'),
-    },
-    {
-      id: '2',
-      title: 'Node.js API Example',
-      description: 'A basic REST API built with Node.js and Express.',
-      date: new Date('2023-09-25'),
-    },
-    {
-      id: '3',
-      title: 'Angular Form Validation',
-      description: 'Example of reactive form validation in Angular.',
-      date: new Date('2023-09-20'),
-    },
-  ];
+  recentBins: CodeBin[] = [];
 
   constructor(public service: SharedService) {}
 
   ngOnInit(): void {
     this.service.loginOrNotLoggedIn = true;
+    this.recentBins = this.service.getCodeBins();
   }
 }

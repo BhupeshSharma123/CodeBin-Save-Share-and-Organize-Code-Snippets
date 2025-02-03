@@ -53,13 +53,10 @@
             {{ bin.title }}
           </h3>
           <p class="text-gray-600 mb-4">
-            {{ bin.description || "No description provided." }}
+            {{ bin.code.slice(0, 100) || "No description provided." }}
           </p>
           <div class="flex justify-between items-center">
-            <a
-              [routerLink]="['/bin', bin.id]"
-              class="text-blue-600 hover:underline"
-            >
+            <a [routerLink]="['/view']" class="text-blue-600 hover:underline">
               View Bin
             </a>
             <span class="text-sm text-gray-500">

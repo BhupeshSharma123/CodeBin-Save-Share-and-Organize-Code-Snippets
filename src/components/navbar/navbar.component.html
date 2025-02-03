@@ -7,13 +7,15 @@
       CodeBin
     </h2>
     <div class="flex space-x-4">
-      <a
-        *ngIf="service.loginOrNotLoggedIn; else signupLink"
-        routerLink="/login"
-        routerLinkActive="active"
-        class="text-gray-300 hover:text-white px-3 py-2 rounded-md transition duration-300"
-        >Login</a
-      >
+      <ng-container *ngIf="service.loginOrNotLoggedIn; else signupLink">
+        <a
+          routerLink="/login"
+          routerLinkActive="active"
+          class="text-gray-300 hover:text-white px-3 py-2 rounded-md transition duration-300"
+          >{{ service.loginOrNotLoggedIn ? "Sign Out" : "Login" }}</a
+        >
+      </ng-container>
+
       <ng-template #signupLink>
         <a
           routerLink="/signup"

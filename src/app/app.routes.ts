@@ -6,6 +6,7 @@ import { CodeBinComponent } from '../components/code-bin/code-bin.component';
 import { DataViewComponent } from '../components/data-view/data-view.component';
 import { HomeComponent } from '../components/home/home.component';
 import { AuthGuard } from '../auth/auth.guard'; // Add AuthGuard for protected routes
+import { AboutComponent } from '../components/about/about.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -32,11 +33,8 @@ export const routes: Routes = [
   },
   {
     path: 'about',
-    loadChildren: () =>
-      import('../components/about/about.component').then(
-        (m) => m.AboutComponent!
-      ),
+    component: AboutComponent,
   },
-  { path: '', redirectTo: '/login', pathMatch: 'full' }, // Default route
+  { path: '', redirectTo: 'home', pathMatch: 'full' }, // Default route
   { path: '**', component: NotFoundComponent }, // Wildcard route for 404
 ];
