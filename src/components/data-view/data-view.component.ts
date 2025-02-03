@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SharedService } from '../../services/shared.service';
-type codeBins = {
+
+type CodeBin = {
   id: number;
   title: string;
   code: string;
 };
+
 @Component({
   selector: 'app-data-view',
   templateUrl: './data-view.component.html',
@@ -14,35 +16,46 @@ type codeBins = {
   imports: [CommonModule],
 })
 export class DataViewComponent implements OnInit {
-  codeBins: codeBins[] = [];
+  codeBins: CodeBin[] = [];
+  timeStamp: any;
+  values: any;
+
   constructor(
     private router: Router,
     private service: SharedService,
     private route: ActivatedRoute
   ) {}
-  timeStamp: any;
-  values: any;
+
   ngOnInit() {
     this.loadCodeBins();
     this.route.queryParams.subscribe((params) => {
       const timeStamp = params['timeStamp'];
-      const editedValues = {
-        id: params['id'],
+      const editedValues: CodeBin = {
+        id: Number(params['id']), // Convert to number
         title: params['title'],
         code: params['code'],
       };
+
+      if (editedValues.id) {
+        this.updateCodeBin(editedValues);
+      }
+
       this.timeStamp = timeStamp;
       this.values = editedValues;
-
-      console.log(this.values, 'received edited values');
-      
-      this.service.saveCodeBin(this.values);
-      
+      console.log(this.values, 'Received edited values');
     });
   }
+
   loadCodeBins(): void {
     const storedData = localStorage.getItem('codeBins');
     this.codeBins = storedData ? JSON.parse(storedData) : [];
+  }
+
+  updateCodeBin(updatedBin: CodeBin): void {
+    this.codeBins = this.codeBins.map((bin) =>
+      bin.id === updatedBin.id ? updatedBin : bin
+    );
+    localStorage.setItem('codeBins', JSON.stringify(this.codeBins));
   }
 
   deleteCodeBin(id: number): void {
@@ -50,18 +63,18 @@ export class DataViewComponent implements OnInit {
     localStorage.setItem('codeBins', JSON.stringify(this.codeBins));
   }
 
-  // Navigate to edit page
   editCodeBin(id: number): void {
     this.service.checkEdit = true;
-    const codeBin = this.service.getCodeBinById(id);
+    const codeBin = this.codeBins.find((bin) => bin.id === id);
 
     if (codeBin) {
-      this.service.setCodeBinToEdit(codeBin); // Store the code bin in the service
-      this.router.navigate(['/edit', id]); // Navigate to the edit page
+      this.service.setCodeBinToEdit(codeBin); // Store in service
+      this.router.navigate(['/edit', id]); // Navigate to edit page
     } else {
       console.error('Code bin not found!');
     }
   }
+
   createBin() {
     this.router.navigate(['/bin']);
   }
