@@ -7,62 +7,89 @@ import {
   Validators,
 } from '@angular/forms';
 import { SharedService } from '../../services/shared.service';
-
 import { Router } from '@angular/router';
-
 import { ToastrService } from 'ngx-toastr';
+import { SupabaseService } from '../../app/services/supabase.service';
+import { take } from 'rxjs/operators';
+import { RouterLink } from '@angular/router';
+import { NavbarComponent } from "../navbar/navbar.component";
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, NavbarComponent],
   styleUrls: ['./login.component.css'],
+  standalone: true,
 })
 export class LoginComponent implements OnInit {
   constructor(
-    private service: SharedService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private supabaseService: SupabaseService
   ) {}
 
-  ngOnInit() {}
-  name = new FormControl('', [Validators.required]); // Creates a FormControl with an initial empty string value
-  email = new FormControl('test@example.com', [
+  ngOnInit() {
+    // Check if user is already logged in
+    this.supabaseService.user$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+        this.router.navigate(['/home']);
+      }
+    });
+  }
+
+  email = new FormControl('', [Validators.required, Validators.email]);
+  password = new FormControl('', [
     Validators.required,
-    Validators.email,
+    Validators.minLength(6),
   ]);
-  password = new FormControl('test@example.com', [
-    Validators.required,
-    Validators.minLength(5),
-  ]);
-  // Creates a FormControl with an initial value
+
   loginForm = new FormGroup({
-    name: this.name,
     email: this.email,
     password: this.password,
   });
-  login() {
-    console.log(this.loginForm.value);
-    console.log(this.service.checkData(this.loginForm.value));
-    const loginCheck: boolean = this.service.checkData(this.loginForm.value);
-    if (loginCheck) {
-      this.service.loginOrNotLoggedIn = true;
-      this.showSuccess();
-      this.router.navigate(['/home']);
+
+  async login() {
+    // Check if the form is valid
+    if (this.loginForm.valid) {
+      try {
+        // Extract email and password from the form
+        const { email, password } = this.loginForm.value;
+
+        // Ensure email and password are not null or undefined
+        if (!email || !password) {
+          this.toastr.error('Email and password are required.');
+          return;
+        }
+
+        // Attempt to sign in using SupabaseService
+        await this.supabaseService.signIn(email, password);
+
+        // Show success message
+        this.toastr.success('Login Successful');
+
+        // Navigate to the home page after successful login
+        await this.router.navigate(['/home']);
+      } catch (error: any) {
+        // Log the error for debugging purposes
+        console.error('Login error:', error);
+
+        // Show a user-friendly error message
+        this.toastr.error(error.message ?? 'Login failed. Please try again.');
+      }
     } else {
-      this.service.loginOrNotLoggedIn = false;
-      alert('Login Failed');
+      // Provide feedback if the form is invalid
+      this.toastr.error('Please fill in all required fields correctly.');
+
+      // Optionally, mark all form controls as touched to display validation messages
+      this.loginForm.markAllAsTouched();
     }
-    console.log(this.service.loginOrNotLoggedIn);
   }
 
-  // Creates a FormControl with initial value and disabled state
-  reset() {
-    this.loginForm.reset();
-  }
   signUp() {
     this.router.navigate(['/signup']);
   }
-  showSuccess() {
-    this.toastr.success('Login Successfull');
-  } // Creates a FormControl with initial value and disabled state
+
+  reset() {
+    this.loginForm.reset();
+  }
 }

@@ -9,12 +9,17 @@ import { AuthGuard } from '../auth/auth.guard'; // Add AuthGuard for protected r
 import { AboutComponent } from '../components/about/about.component';
 
 export const routes: Routes = [
+  // Public routes
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
+  { path: 'about', component: AboutComponent },
+
+  // Protected routes
   {
     path: 'home',
     component: HomeComponent,
-    // Protect the home route
+
+    data: { requiresAuth: true }, // Protect the home route
   },
   {
     path: 'view',
@@ -31,10 +36,10 @@ export const routes: Routes = [
     component: CodeBinComponent,
     canActivate: [AuthGuard], // Protect the bin route
   },
-  {
-    path: 'about',
-    component: AboutComponent,
-  },
-  { path: '', redirectTo: 'home', pathMatch: 'full' }, // Default route
-  { path: '**', component: NotFoundComponent }, // Wildcard route for 404
+
+  // Default route (redirect to home)
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+
+  // Wildcard route for 404
+  { path: '**', component: NotFoundComponent }, // Catch-all route for unknown paths
 ];

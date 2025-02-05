@@ -1,126 +1,100 @@
 <form
   [formGroup]="signupForm"
-  class="max-w-md mx-auto p-6 bg-white rounded-md shadow-md"
+  class="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-md shadow-md"
+  (ngSubmit)="signup()"
 >
-  <h4 class="text-2xl font-semibold mb-4 text-center">Sign Up</h4>
+  <h4
+    class="text-2xl font-semibold mb-4 text-center text-gray-800 dark:text-white"
+  >
+    Sign Up
+  </h4>
 
   <div class="mb-4">
-    <label for="username" class="block text-gray-700 font-bold mb-2"
-      >Username</label
+    <label
+      for="email"
+      class="block text-gray-700 dark:text-gray-300 font-bold mb-2"
+      >Email</label
     >
-    <input
-      type="text"
-      id="username"
-      placeholder="Username"
-      [formControl]="username"
-      class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-    <div *ngIf="username.invalid && (username.dirty || username.touched)">
-      <div
-        *ngIf="username.errors?.['required']"
-        class="text-red-500 text-sm mt-1"
-      >
-        Username is required.
-      </div>
-      <div
-        *ngIf="username.errors?.['minlength']"
-        class="text-red-500 text-sm mt-1"
-      >
-        Username must be at least 3 characters.
-      </div>
-    </div>
-  </div>
-
-  <div class="mb-4">
-    <label for="email" class="block text-gray-700 font-bold mb-2">Email</label>
     <input
       type="email"
       id="email"
-      placeholder="Email"
-      [formControl]="email"
-      class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      formControlName="email"
+      class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+      placeholder="Enter email"
     />
-    <div *ngIf="email.invalid && (email.dirty || email.touched)">
-      <div *ngIf="email.errors?.['required']" class="text-red-500 text-sm mt-1">
-        Email is required.
-      </div>
-      <div *ngIf="email.errors?.['email']" class="text-red-500 text-sm mt-1">
-        Email is invalid.
-      </div>
+    <div
+      *ngIf="email.invalid && (email.dirty || email.touched)"
+      class="text-danger"
+    >
+      <small *ngIf="email.errors?.['required']">Email is required</small>
+      <small *ngIf="email.errors?.['email']">Please enter a valid email</small>
     </div>
   </div>
 
   <div class="mb-4">
-    <label for="password" class="block text-gray-700 font-bold mb-2"
+    <label
+      for="password"
+      class="block text-gray-700 dark:text-gray-300 font-bold mb-2"
       >Password</label
     >
     <input
       type="password"
       id="password"
+      formControlName="password"
+      class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       placeholder="Password"
-      [formControl]="password"
-      class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
-    <div *ngIf="password.invalid && (password.dirty || password.touched)">
-      <div
-        *ngIf="password.errors?.['required']"
-        class="text-red-500 text-sm mt-1"
+    <div
+      *ngIf="password.invalid && (password.dirty || password.touched)"
+      class="text-danger"
+    >
+      <small *ngIf="password.errors?.['required']">Password is required</small>
+      <small *ngIf="password.errors?.['minlength']"
+        >Password must be at least 6 characters</small
       >
-        Password is required.
-      </div>
-      <div
-        *ngIf="password.errors?.['minlength']"
-        class="text-red-500 text-sm mt-1"
-      >
-        Password must be at least 6 characters.
-      </div>
     </div>
   </div>
 
   <div class="mb-6">
-    <label for="confirmPassword" class="block text-gray-700 font-bold mb-2"
+    <label
+      for="confirmPassword"
+      class="block text-gray-700 dark:text-gray-300 font-bold mb-2"
       >Confirm Password</label
     >
     <input
       type="password"
       id="confirmPassword"
+      formControlName="confirmPassword"
+      class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       placeholder="Confirm Password"
-      [formControl]="confirmPassword"
-      class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
     <div
       *ngIf="
         confirmPassword.invalid &&
         (confirmPassword.dirty || confirmPassword.touched)
       "
+      class="text-danger"
     >
-      <div
-        *ngIf="confirmPassword.errors?.['required']"
-        class="text-red-500 text-sm mt-1"
+      <small *ngIf="confirmPassword.errors?.['required']"
+        >Please confirm your password</small
       >
-        Confirm Password is required.
-      </div>
-      <div
-        *ngIf="confirmPassword.errors?.['mustMatch']"
-        class="text-red-500 text-sm mt-1"
-      >
-        Passwords must match.
-      </div>
     </div>
   </div>
 
   <div class="flex justify-between">
     <button
-      (click)="signup()"
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+      type="submit"
+      [disabled]="!signupForm.valid"
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-600"
     >
       Sign Up
     </button>
     <button
-      (click)="reset()"
-      class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+      type="button"
+      (click)="goToLogin()"
+      class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500"
     >
-      Reset
+      Already have an account? Login
     </button>
   </div>
 </form>

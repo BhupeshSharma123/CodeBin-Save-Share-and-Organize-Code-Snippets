@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SharedService } from '../../services/shared.service';
+import { NavbarComponent } from '../navbar/navbar.component';
 
 interface CodeBin {
   id: string;
@@ -14,7 +15,7 @@ interface CodeBin {
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, NavbarComponent],
 })
 export class HomeComponent implements OnInit {
   recentBins: CodeBin[] = [];

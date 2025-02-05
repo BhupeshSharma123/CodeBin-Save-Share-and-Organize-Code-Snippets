@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -8,7 +8,10 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { SupabaseService } from '../../app/services/supabase.service';
+
 function mustMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.parent?.get('password');
   const confirmPassword = control;
@@ -23,43 +26,59 @@ function mustMatch(control: AbstractControl): ValidationErrors | null {
 
   return null;
 }
+
 @Component({
-  standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
   selector: 'app-signup',
   templateUrl: './signup.component.html',
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
   styleUrls: ['./signup.component.css'],
+  standalone: true,
 })
-export class SignupComponent implements OnInit {
-  constructor(private router: Router) {}
+export class SignupComponent {
+  constructor(
+    private router: Router,
+    private toastr: ToastrService,
+    private supabaseService: SupabaseService
+  ) {}
 
-  ngOnInit() {}
-  username = new FormControl('', [
-    Validators.required,
-    Validators.minLength(3),
-  ]);
   email = new FormControl('', [Validators.required, Validators.email]);
   password = new FormControl('', [
     Validators.required,
     Validators.minLength(6),
   ]);
-  confirmPassword = new FormControl('', [Validators.required, mustMatch]);
-  // Creates a FormControl with an initial value
+  confirmPassword = new FormControl('', [Validators.required]);
+
   signupForm = new FormGroup({
-    username: this.username,
     email: this.email,
     password: this.password,
     confirmPassword: this.confirmPassword,
   });
-  signup() {
+
+  async signup() {
     if (this.signupForm.valid) {
-      console.log(this.signupForm.value);
-      localStorage.setItem('signup', JSON.stringify(this.signupForm.value));
-      this.router.navigate(['/login']);
+      const { email, password, confirmPassword } = this.signupForm.value;
+
+      if (password !== confirmPassword) {
+        this.toastr.error('Passwords do not match');
+        return;
+      }
+
+      try {
+        await this.supabaseService.signUp(email!, password!);
+        this.toastr.success(
+          'Signup successful! Please check your email to confirm your account.'
+        );
+        await this.router.navigate(['/login']);
+      } catch (error: any) {
+        console.error('Signup error:', error);
+        this.toastr.error(error.message || 'Signup failed. Please try again.');
+      }
+    } else {
+      this.toastr.error('Please fill in all required fields correctly');
     }
   }
 
-  reset() {
-    this.signupForm.reset();
-  } // Creates a
+  goToLogin() {
+    this.router.navigate(['/login']);
+  }
 }
