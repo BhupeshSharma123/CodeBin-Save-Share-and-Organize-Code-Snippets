@@ -3,7 +3,7 @@ import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface CodeBin {
+export interface SnipAI {
   id?: string;
   title: string;
   code: string;
@@ -63,8 +63,8 @@ export class SupabaseService {
     return this.supabase.auth.getUser();
   }
 
-  // CodeBin methods
-  async createCodeBin(bin: Omit<CodeBin, 'user_id' | 'id'>): Promise<CodeBin> {
+  // SnipAI  methods
+  async createCodeBin(bin: Omit<SnipAI, 'user_id' | 'id'>): Promise<SnipAI> {
     const user = await this.supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
 
@@ -81,7 +81,7 @@ export class SupabaseService {
     return data;
   }
 
-  async updateCodeBin(id: string, updates: Partial<CodeBin>): Promise<CodeBin> {
+  async updateCodeBin(id: string, updates: Partial<SnipAI>): Promise<SnipAI> {
     const { data, error } = await this.supabase
       .from('codebins')
       .update(updates)
@@ -93,7 +93,7 @@ export class SupabaseService {
     return data;
   }
 
-  async getCodeBin(id: string): Promise<CodeBin> {
+  async getCodeBin(id: string): Promise<SnipAI> {
     const { data, error } = await this.supabase
       .from('codebins')
       .select()
@@ -104,7 +104,7 @@ export class SupabaseService {
     return data;
   }
 
-  async getUserCodeBins(): Promise<CodeBin[]> {
+  async getUserCodeBins(): Promise<SnipAI[]> {
     const user = await this.supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
 

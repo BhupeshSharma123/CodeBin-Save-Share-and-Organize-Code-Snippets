@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-// Define the schema for CodeBin
+// Define the schema for SnipAI
 const CodeBinSchema = new Schema(
   {
     title: {
@@ -25,5 +25,5 @@ const CodeBinSchema = new Schema(
 );
 
 // Create and export the model
-const CodeBin = model("CodeBin", CodeBinSchema);
-export default CodeBin;
+const SnipAI = model("SnipAI ", CodeBinSchema);
+export default SnipAI;

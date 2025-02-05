@@ -22,8 +22,8 @@ import { ThemeService } from '../../app/services/theme.service';
             <a
               routerLink="/home"
               class="text-gray-900 dark:text-white text-xl font-bold"
-              >CodeBin</a
-            >
+              >SnipAI
+            </a>
             <ng-container *ngIf="isLoggedIn$ | async">
               <a
                 routerLink="/home"

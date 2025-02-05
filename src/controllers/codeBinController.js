@@ -1,10 +1,10 @@
-const CodeBin = require("../models/CodeBin");
+const SnipAI = require("../models/SnipAI ");
 
-// Create a new CodeBin
+// Create a new SnipAI
 exports.createCodeBin = async (req, res) => {
   try {
     const { title, code } = req.body;
-    const newCodeBin = new CodeBin({ title, code });
+    const newCodeBin = new SnipAI({ title, code });
     await newCodeBin.save();
     res.status(201).json(newCodeBin);
   } catch (err) {
@@ -15,45 +15,47 @@ exports.createCodeBin = async (req, res) => {
 // Get all CodeBins
 exports.getAllCodeBins = async (req, res) => {
   try {
-    const codeBins = await CodeBin.find();
+    const codeBins = await SnipAI.find();
     res.status(200).json(codeBins);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Get a single CodeBin by ID
+// Get a single SnipAI  by ID
 exports.getCodeBinById = async (req, res) => {
   try {
-    const codeBin = await CodeBin.findById(req.params.id);
-    if (!codeBin) return res.status(404).json({ error: "CodeBin not found" });
+    const codeBin = await SnipAI.findById(req.params.id);
+    if (!codeBin) return res.status(404).json({ error: "SnipAI  not found" });
     res.status(200).json(codeBin);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Update a CodeBin
+// Update a SnipAI
 exports.updateCodeBin = async (req, res) => {
   try {
-    const updatedCodeBin = await CodeBin.findByIdAndUpdate(
+    const updatedCodeBin = await SnipAI.findByIdAndUpdate(
       req.params.id,
       { ...req.body, updatedAt: Date.now() },
       { new: true }
     );
-    if (!updatedCodeBin) return res.status(404).json({ error: "CodeBin not found" });
+    if (!updatedCodeBin)
+      return res.status(404).json({ error: "SnipAI  not found" });
     res.status(200).json(updatedCodeBin);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Delete a CodeBin
+// Delete a SnipAI
 exports.deleteCodeBin = async (req, res) => {
   try {
-    const deletedCodeBin = await CodeBin.findByIdAndDelete(req.params.id);
-    if (!deletedCodeBin) return res.status(404).json({ error: "CodeBin not found" });
-    res.status(200).json({ message: "CodeBin deleted successfully" });
+    const deletedCodeBin = await SnipAI.findByIdAndDelete(req.params.id);
+    if (!deletedCodeBin)
+      return res.status(404).json({ error: "SnipAI  not found" });
+    res.status(200).json({ message: "SnipAI  deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
