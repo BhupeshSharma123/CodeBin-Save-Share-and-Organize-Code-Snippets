@@ -22,9 +22,14 @@ export const routes: Routes = [
     data: { requiresAuth: true }, // Protect the home route
   },
   {
+    path: 'view/:id',
+    component: DataViewComponent,
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'view',
     component: DataViewComponent,
-    canActivate: [AuthGuard], // Protect the view route
+    canActivate: [AuthGuard],
   },
   {
     path: 'edit/:id',

@@ -9,26 +9,73 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SupabaseService, SnipAI } from '../../app/services/supabase.service';
 import { ToastrService } from 'ngx-toastr';
+import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-data-view',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Sidebar -->
+      <!-- Sidebar - Only show in list view -->
       <div
+        *ngIf="!route.snapshot.paramMap.get('id')"
         class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg transition-all duration-200"
       >
+        <!-- Search Bar -->
         <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            My Snippets
-          </h2>
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (ngModelChange)="onSearch()"
+              placeholder="Search snippets..."
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200"
+            />
+            <svg
+              class="w-5 h-5 absolute right-3 top-3 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
         </div>
-        <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
-          <!-- Snippet List -->
+
+        <!-- Categories -->
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+            Categories
+          </h3>
+          <div class="space-y-2">
+            <button
+              *ngFor="let category of categories"
+              (click)="filterByCategory(category)"
+              class="w-full text-left px-3 py-2 rounded-lg transition-colors"
+              [class.bg-blue-50]="selectedCategory === category"
+              [class.dark:bg-blue-900]="selectedCategory === category"
+              [class.text-blue-600]="selectedCategory === category"
+              [class.dark:text-blue-400]="selectedCategory === category"
+            >
+              {{ category }}
+              <span class="float-right text-sm text-gray-500">{{
+                getCategoryCount(category)
+              }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Snippet List -->
+        <div class="overflow-y-auto max-h-[calc(100vh-16rem)]">
           <div
-            *ngFor="let bin of codeBins"
+            *ngFor="let bin of filteredBins"
             (click)="selectBin(bin)"
             class="p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
             [class.bg-blue-50]="selectedBin?.id === bin.id"
@@ -37,15 +84,25 @@ import { ToastrService } from 'ngx-toastr';
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">
               {{ bin.title }}
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ bin.language }}
-            </p>
+            <div class="flex items-center mt-1 space-x-2">
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{
+                bin.language
+              }}</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{
+                getCategory(bin)
+              }}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Main Content -->
-      <div class="lg:col-span-2">
+      <!-- Main Content - Adjust span based on view -->
+      <div
+        [class]="
+          route.snapshot.paramMap.get('id') ? 'lg:col-span-3' : 'lg:col-span-2'
+        "
+      >
         <div
           *ngIf="selectedBin"
           class="bg-white dark:bg-gray-800 rounded-lg shadow-lg transition-all duration-200"
@@ -245,21 +302,44 @@ export class DataViewComponent implements OnInit {
   codeBins: SnipAI[] = [];
   selectedBin: SnipAI | null = null;
   isShareMenuOpen = false;
+  searchQuery = '';
+  selectedCategory: string | null = null;
+  categories: string[] = [
+    'All',
+    'Utilities',
+    'Algorithms',
+    'UI Components',
+    'API',
+    'Database',
+  ];
+  filteredBins: SnipAI[] = [];
 
   constructor(
+    public route: ActivatedRoute,
     private supabaseService: SupabaseService,
     private toastr: ToastrService
   ) {}
 
   async ngOnInit() {
-    try {
-      this.codeBins = await this.supabaseService.getUserCodeBins();
-      if (this.codeBins.length > 0) {
-        this.selectedBin = this.codeBins[0];
+    const id = this.route.snapshot.paramMap.get('id');
+
+    if (id) {
+      // Single snippet view
+      try {
+        this.selectedBin = await this.supabaseService.getCodeBin(id);
+      } catch (error) {
+        console.error('Error fetching snippet:', error);
       }
-    } catch (error: any) {
-      this.toastr.error('Error loading code bins');
+    } else {
+      // List view
+      try {
+        this.codeBins = await this.supabaseService.getUserCodeBins();
+      } catch (error) {
+        console.error('Error fetching snippets:', error);
+      }
     }
+
+    this.filteredBins = this.codeBins;
   }
 
   selectBin(bin: SnipAI) {
@@ -331,5 +411,79 @@ export class DataViewComponent implements OnInit {
         this.toastr.error('Error deleting code bin');
       }
     }
+  }
+
+  onSearch() {
+    this.filterSnippets();
+  }
+
+  filterByCategory(category: string) {
+    this.selectedCategory = category === 'All' ? null : category;
+    this.filterSnippets();
+  }
+
+  filterSnippets() {
+    let filtered = [...this.codeBins];
+
+    // Apply search filter
+    if (this.searchQuery) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (bin) =>
+          bin.title.toLowerCase().includes(query) ||
+          bin.code.toLowerCase().includes(query) ||
+          bin.language.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply category filter
+    if (this.selectedCategory) {
+      filtered = filtered.filter(
+        (bin) => this.getCategory(bin) === this.selectedCategory
+      );
+    }
+
+    this.filteredBins = filtered;
+  }
+
+  getCategory(bin: SnipAI): string {
+    // Smart categorization based on code content and title
+    const content = (bin.title + ' ' + bin.code).toLowerCase();
+
+    if (
+      content.includes('api') ||
+      content.includes('fetch') ||
+      content.includes('axios')
+    ) {
+      return 'API';
+    }
+    if (
+      content.includes('component') ||
+      content.includes('render') ||
+      content.includes('ui')
+    ) {
+      return 'UI Components';
+    }
+    if (
+      content.includes('sort') ||
+      content.includes('search') ||
+      content.includes('algorithm')
+    ) {
+      return 'Algorithms';
+    }
+    if (
+      content.includes('sql') ||
+      content.includes('database') ||
+      content.includes('query')
+    ) {
+      return 'Database';
+    }
+    return 'Utilities';
+  }
+
+  getCategoryCount(category: string): number {
+    if (category === 'All') return this.codeBins.length;
+    return this.codeBins.filter((bin) => this.getCategory(bin) === category)
+      .length;
   }
 }
