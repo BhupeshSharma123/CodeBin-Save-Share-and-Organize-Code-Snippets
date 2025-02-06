@@ -78,3 +78,8 @@ a:hover {
     padding: 1rem;
   }
 }
+/* styles.css or your component's CSS file */
+.tilt-hover:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s ease-in-out;
+}
