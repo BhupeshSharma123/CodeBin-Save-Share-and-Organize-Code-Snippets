@@ -9,6 +9,8 @@ export interface SnipAI {
   code: string;
   language: string;
   user_id: string;
+  tags?: string[];
+  description?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -124,6 +126,125 @@ export class SupabaseService {
       .delete()
       .eq('id', id);
 
+    if (error) throw error;
+  }
+
+  async updateSnippet(id: string, data: any) {
+    const { error } = await this.supabase
+      .from('snippets')
+      .update(data)
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  }
+
+  async createSnippet(data: Omit<SnipAI, 'user_id' | 'id'>): Promise<SnipAI> {
+    const user = await this.supabase.auth.getUser();
+    if (!user.data.user) throw new Error('User not authenticated');
+
+    const { data: snippet, error } = await this.supabase
+      .from('snippets')
+      .insert({
+        ...data,
+        user_id: user.data.user.id,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return snippet;
+  }
+
+  async getSnippetById(id: string): Promise<SnipAI> {
+    const { data, error } = await this.supabase
+      .from('snippets')
+      .select()
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getProfile(userId: string) {
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .select()
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return { data };
+  }
+
+  async updateProfile(profile: any) {
+    const { error } = await this.supabase.from('profiles').upsert(profile);
+
+    if (error) throw error;
+    return true;
+  }
+
+  async getUserStats(userId: string) {
+    const { data: snippets, error } = await this.supabase
+      .from('snippets')
+      .select('language, created_at')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    // Calculate stats
+    const stats = {
+      totalSnippets: snippets.length,
+      lastActive:
+        snippets.length > 0
+          ? new Date(
+              Math.max(...snippets.map((s) => new Date(s.created_at).getTime()))
+            )
+          : new Date(),
+      favoriteLanguage:
+        snippets.length > 0
+          ? Object.entries(
+              snippets.reduce((acc, curr) => {
+                acc[curr.language] = (acc[curr.language] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>)
+            ).sort((a, b) => b[1] - a[1])[0][0]
+          : '',
+    };
+
+    return stats;
+  }
+
+  async resetPassword(email: string) {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
+  }
+
+  async deleteAccount(userId: string) {
+    // First delete user data
+    const { error: dataError } = await this.supabase
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+
+    if (dataError) throw dataError;
+
+    // Then delete auth user
+    const { error: authError } = await this.supabase.auth.admin.deleteUser(
+      userId
+    );
+    if (authError) throw authError;
+
+    return true;
+  }
+
+  async updatePassword(newPassword: string) {
+    const { error } = await this.supabase.auth.updateUser({
+      password: newPassword,
+    });
     if (error) throw error;
   }
 }

@@ -17,3 +17,56 @@
 @import 'ngx-toastr/toastr-bs4-alert';
 
 @import 'ngx-toastr/toastr-bs5-alert';
+
+/* Add these utility classes */
+.tool-card-hover {
+  @apply transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+}
+
+.icon-hover {
+  @apply transition-all duration-300 group-hover:scale-110 group-hover:rotate-3;
+}
+
+.category-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.category-badge-code {
+  @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+}
+
+.category-badge-productivity {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+.category-badge-learning {
+  @apply bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200;
+}
+
+/* Add smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add custom animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Add gradient animations */
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 15s ease infinite;
+}

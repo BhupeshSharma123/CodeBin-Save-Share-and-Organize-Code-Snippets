@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -7,6 +8,8 @@ export class SharedService {
   private codeBinToEdit: any = null;
   checkEdit: boolean = false;
   loginOrNotLoggedIn: boolean = false;
+  private refreshSnippetsSource = new Subject<void>();
+  refreshSnippets$ = this.refreshSnippetsSource.asObservable();
 
   constructor() {}
 
@@ -54,5 +57,9 @@ export class SharedService {
   // Get a specific code bin by ID
   getCodeBinById(id: number): any {
     return this.getCodeBins().find((bin) => bin.id === id) || null;
+  }
+
+  refreshSnippets() {
+    this.refreshSnippetsSource.next();
   }
 }

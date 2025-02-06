@@ -5,23 +5,31 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from '@angular/router';
-import { SharedService } from '../services/shared.service';
+import { SupabaseService } from '../app/services/supabase.service';
+import { map, take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(private service: SharedService, private router: Router) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private router: Router
+  ) {}
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean {
-    if (this.service.loginOrNotLoggedIn) {
-      return true; // Allow access if the user is logged in
-    } else {
-      this.router.navigate(['/login']); // Redirect to login if not logged in
-      return false;
-    }
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    return this.supabaseService.user$.pipe(
+      take(1),
+      map((user) => {
+        if (user) {
+          return true;
+        } else {
+          this.router.navigate(['/login'], {
+            queryParams: { returnUrl: state.url },
+          });
+          return false;
+        }
+      })
+    );
   }
 }

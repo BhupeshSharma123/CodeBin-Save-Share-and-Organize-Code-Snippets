@@ -8,194 +8,98 @@ import { SupabaseService, SnipAI } from '../../app/services/supabase.service';
 @Component({
   selector: 'app-home',
   template: `
-    <div class="w-full">
+    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
       <!-- Hero Section -->
-      <section class="text-center py-20">
-        <div class="max-w-4xl mx-auto px-4">
-          <h1 class="text-5xl font-bold text-gray-800 dark:text-white mb-6">
-            Smart Snippet Storage with AI
+      <div class="container mx-auto px-4 pt-20 pb-16">
+        <div class="text-center">
+          <h1 class="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            Next-Gen AI Development Tools
           </h1>
-          <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
-            Store, manage, and enhance your code snippets with the power of AI
+          <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+            Supercharge your development workflow with AI-powered tools for coding, testing, and documentation
           </p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            <div
-              class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
-            >
-              <div class="text-blue-500 mb-4">
-                <svg
-                  class="w-12 h-12 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
-              </div>
-              <h3
-                class="text-xl font-semibold text-gray-800 dark:text-white mb-2"
-              >
-                AI-Powered Analysis
-              </h3>
-              <p class="text-gray-600 dark:text-gray-300">
-                Get instant explanations and improvements for your code
-              </p>
-            </div>
+          <div class="flex justify-center gap-4">
+            <button class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Get Started
+            </button>
+            <button class="px-8 py-3 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+              View Demo
+            </button>
+          </div>
+        </div>
+      </div>
 
-            <div
-              class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
-            >
-              <div class="text-green-500 mb-4">
-                <svg
-                  class="w-12 h-12 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-              </div>
-              <h3
-                class="text-xl font-semibold text-gray-800 dark:text-white mb-2"
-              >
-                Code Translation
-              </h3>
-              <p class="text-gray-600 dark:text-gray-300">
-                Translate snippets between different programming languages
-              </p>
+      <!-- Features Grid -->
+      <div class="container mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+          Powerful Features for Modern Development
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Feature Cards -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
             </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Smart Code Generation</h3>
+            <p class="text-gray-600 dark:text-gray-300">Generate production-ready code from natural language descriptions</p>
+          </div>
 
-            <div
-              class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
-            >
-              <div class="text-purple-500 mb-4">
-                <svg
-                  class="w-12 h-12 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <h3
-                class="text-xl font-semibold text-gray-800 dark:text-white mb-2"
-              >
-                Smart Organization
-              </h3>
-              <p class="text-gray-600 dark:text-gray-300">
-                Efficiently organize and search your code library
-              </p>
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+            <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Automated Testing</h3>
+            <p class="text-gray-600 dark:text-gray-300">Generate comprehensive test suites with AI-powered test case generation</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Code Optimization</h3>
+            <p class="text-gray-600 dark:text-gray-300">Automatically optimize your code for better performance and efficiency</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="bg-blue-600 dark:bg-blue-900">
+        <div class="container mx-auto px-4 py-16">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div class="text-4xl font-bold text-white mb-2">500K+</div>
+              <div class="text-blue-100">Lines of Code Generated</div>
+            </div>
+            <div>
+              <div class="text-4xl font-bold text-white mb-2">10K+</div>
+              <div class="text-blue-100">Happy Developers</div>
+            </div>
+            <div>
+              <div class="text-4xl font-bold text-white mb-2">99%</div>
+              <div class="text-blue-100">Satisfaction Rate</div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Recent Snippets Section -->
-      <section class="py-12 px-4">
-        <div class="flex justify-between items-center mb-8">
-          <h2 class="text-3xl font-bold text-gray-800 dark:text-white">
-            Recent Snippets
-          </h2>
-          <a
-            routerLink="/view"
-            class="text-blue-600 dark:text-blue-400 hover:underline flex items-center"
-          >
-            View All
-            <svg
-              class="w-4 h-4 ml-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </a>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            *ngFor="let snippet of recentBins"
-            class="group bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden"
-          >
-            <div class="p-6">
-              <div class="flex justify-between items-start mb-4">
-                <h3
-                  class="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-                >
-                  {{ snippet.title }}
-                </h3>
-                <span
-                  class="px-3 py-1 text-sm rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                >
-                  {{ snippet.language }}
-                </span>
-              </div>
-
-              <div class="relative">
-                <pre
-                  class="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-hidden max-h-32"
-                  >{{ snippet.code }}</pre
-                >
-                <div
-                  class="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white dark:from-gray-800 to-transparent"
-                ></div>
-              </div>
-
-              <div class="mt-4 flex justify-between items-center">
-                <span class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ snippet.created_at | date : 'mediumDate' }}
-                </span>
-                <a
-                  [routerLink]="['/view', snippet.id]"
-                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50 rounded-lg transition-colors"
-                >
-                  View Snippet
-                  <svg
-                    class="w-4 h-4 ml-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <!-- CTA Section -->
+      <div class="container mx-auto px-4 py-16 text-center">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          Ready to Transform Your Development Workflow?
+        </h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+          Join thousands of developers who are already using our AI-powered tools to write better code faster.
+        </p>
+        <button class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          Start Free Trial
+        </button>
+      </div>
     </div>
   `,
   styleUrls: ['./home.component.css'],

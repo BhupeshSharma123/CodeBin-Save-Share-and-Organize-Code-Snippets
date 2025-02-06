@@ -1,39 +1,169 @@
-<!-- about.component.html -->
-<div class="about-container">
-  <h1>About Our Application</h1>
+@Component({ selector: 'app-about', template: `
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Hero Section -->
+  <div
+    class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-900 dark:to-indigo-900"
+  >
+    <div class="container mx-auto px-4 py-24 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+        Empowering Developers with AI
+      </h1>
+      <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+        We're building the future of software development by combining human
+        creativity with artificial intelligence.
+      </p>
+    </div>
+    <div
+      class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-50 dark:from-gray-900"
+    ></div>
+  </div>
 
-  <section class="mission-section">
-    <h2>Our Mission</h2>
-    <p>
-      We are dedicated to providing the best user experience through innovative
-      solutions and cutting-edge technology. Our goal is to simplify complex
-      tasks and empower users to achieve more.
-    </p>
-  </section>
+  <!-- Mission Section -->
+  <div class="container mx-auto px-4 py-16">
+    <div class="max-w-3xl mx-auto text-center mb-16">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+        Our Mission
+      </h2>
+      <p class="text-lg text-gray-600 dark:text-gray-300">
+        To revolutionize software development by making AI-powered tools
+        accessible to developers worldwide, enabling them to write better code
+        faster and focus on solving real problems.
+      </p>
+    </div>
 
-  <section class="features-section">
-    <h2>Key Features</h2>
-    <ul>
-      <li *ngFor="let feature of features">{{ feature }}</li>
-    </ul>
-  </section>
+    <!-- Core Values -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+        <div
+          class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <svg
+            class="w-8 h-8 text-blue-600 dark:text-blue-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          Innovation
+        </h3>
+        <p class="text-gray-600 dark:text-gray-300">
+          Pushing the boundaries of what's possible with AI in development
+        </p>
+      </div>
 
-  <section class="team-section">
-    <h2>Meet Our Team</h2>
-    <div class="team-grid">
-      <div class="team-member" *ngFor="let member of teamMembers">
-        <h3>{{ member.name }}</h3>
-        <p class="role">{{ member.role }}</p>
-        <p class="bio">{{ member.bio }}</p>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+        <div
+          class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <svg
+            class="w-8 h-8 text-green-600 dark:text-green-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          Security
+        </h3>
+        <p class="text-gray-600 dark:text-gray-300">
+          Ensuring the highest standards of code security and privacy
+        </p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center">
+        <div
+          class="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <svg
+            class="w-8 h-8 text-purple-600 dark:text-purple-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          Community
+        </h3>
+        <p class="text-gray-600 dark:text-gray-300">
+          Building a strong community of developers and innovators
+        </p>
       </div>
     </div>
-  </section>
 
-  <section class="contact-section">
-    <h2>Contact Us</h2>
-    <p>
-      Have questions? Reach out to us at
-      <a href="mailto:support@example.com">support.com</a>
-    </p>
-  </section>
+    <!-- Team Section -->
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+        Our Team
+      </h2>
+      <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
+        A diverse group of passionate developers and AI experts working to
+        transform the future of coding
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div
+          *ngFor="let member of teamMembers"
+          class="bg-white dark:bg-gray-800 rounded-xl p-6"
+        >
+          <img
+            [src]="member.image"
+            [alt]="member.name"
+            class="w-24 h-24 rounded-full mx-auto mb-4"
+          />
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            {{ member.name }}
+          </h3>
+          <p class="text-gray-600 dark:text-gray-300">{{ member.role }}</p>
+          <div class="flex justify-center space-x-4 mt-4">
+            <a
+              *ngFor="let social of member.socials"
+              [href]="social.url"
+              class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+            >
+              <i [class]="social.icon"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+        Get in Touch
+      </h2>
+      <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
+        Have questions or want to learn more about our AI-powered development
+        tools?
+      </p>
+      <a
+        href="mailto:contact@example.com"
+        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+      >
+        Contact Us
+      </a>
+    </div>
+  </div>
 </div>
+` })
