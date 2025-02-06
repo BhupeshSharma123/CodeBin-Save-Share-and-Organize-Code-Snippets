@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class AIService {
+  [x: string]: any;
   private genAI: GoogleGenerativeAI;
   private model: any;
   private isProcessing = new BehaviorSubject<boolean>(false);

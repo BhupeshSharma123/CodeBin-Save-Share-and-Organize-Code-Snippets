@@ -1,61 +1,51 @@
-# AngularApp
+# SnipAI - Intelligent Code Snippet Manager
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.3.
+SnipAI is a modern web application built with Angular that helps developers save, share, and organize code snippets with the power of AI assistance. The platform offers intelligent code analysis, documentation generation, and snippet management capabilities.
 
-## Development server
+## 🚀 Features
 
-To start a local development server, run:
+- **Smart Code Management**
 
-```bash
-ng serve
-```
+  - Create and organize code snippets
+  - Syntax highlighting for multiple languages
+  - Intelligent code categorization
+  - Dark mode support
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **AI-Powered Tools**
 
-## Code scaffolding
+  - Code explanation and documentation
+  - Automatic code improvements
+  - Cross-language code translation
+  - AI-assisted code generation
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- **User Experience**
+  - Responsive design for all devices
+  - Intuitive user interface
+  - Real-time form validation
+  - Secure authentication system
 
-```bash
-ng generate component component-name
-```
+## 🛠️ Technical Stack
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- **Frontend**: Angular 19
+- **Styling**: Tailwind CSS
+- **Authentication**: Supabase
+- **AI Integration**: Google Generative AI
+- **Code Editor**: Monaco Editor
+- **Additional Tools**:
+  - NgRx for state management
+  - Prism.js for syntax highlighting
+  - ngx-toastr for notifications
 
-```bash
-ng generate --help
-```
+# Code Execution Application
 
-## Building
+## Supported Languages
 
-To build the project run:
+- JavaScript
+- Python
+- Java
 
-```bash
-ng build
-```
+## Usage
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-# SnipAI -Save-Share-and-Organize-Code-Snippets
+1. Select the desired language from the dropdown.
+2. Write your code in the editor.
+3. Click "Execute" to run the code.
