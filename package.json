@@ -25,6 +25,7 @@
     "@google/generative-ai": "^0.21.0",
     "@supabase/supabase-js": "^2.48.1",
     "@types/prismjs": "^1.26.5",
+    "dotenv": "^16.4.7",
     "monaco-editor": "^0.24.0",
     "mongoose": "^8.9.6",
     "ngx-markdown": "^19.0.0",
