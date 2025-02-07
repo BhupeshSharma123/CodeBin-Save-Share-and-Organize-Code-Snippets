@@ -1877,19 +1877,53 @@ export class AIToolsPageComponent implements OnInit {
 
   async generateCode() {
     if (!this.codeDescription) {
-      this.toastr.warning('Please enter a description');
+      this.toastr.warning(
+        'Please provide a detailed description of the code you want to generate'
+      );
       return;
     }
 
     this.isProcessing = true;
     try {
-      this.generatedCode = await this.aiToolsService.generateCode(
-        this.codeDescription,
-        this.selectedLanguage
-      );
-      this.toastr.success('Code generated successfully');
+      // Add input validation
+      if (this.codeDescription.length < 10) {
+        throw new Error('Description too short. Please provide more details.');
+      }
+
+      // Add retry logic and better error handling
+      let attempts = 0;
+      const maxAttempts = 3;
+
+      while (attempts < maxAttempts) {
+        try {
+          this.generatedCode = await this.aiToolsService.generateCode(
+            this.codeDescription,
+            this.selectedLanguage
+          );
+
+          // Validate the generated code
+          if (!this.generatedCode || this.generatedCode.trim().length === 0) {
+            throw new Error('Generated code is empty');
+          }
+
+          this.toastr.success('Code generated successfully');
+          break;
+        } catch (error) {
+          attempts++;
+          if (attempts === maxAttempts) {
+            throw error;
+          }
+          // Wait before retrying
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
     } catch (error) {
-      this.toastr.error('Error generating code');
+      this.generatedCode = '';
+      this.toastr.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to generate code. Please try again.'
+      );
       console.error('Generation error:', error);
     } finally {
       this.isProcessing = false;
@@ -1898,19 +1932,45 @@ export class AIToolsPageComponent implements OnInit {
 
   async debugCode() {
     if (!this.codeToDebug) {
-      this.toastr.warning('Please enter some code to debug');
+      this.toastr.warning('Please enter code to debug');
       return;
     }
 
     this.isProcessing = true;
     try {
-      this.debugResults = await this.aiToolsService.debugCode(
+      // Validate input code
+      if (this.codeToDebug.trim().length < 5) {
+        throw new Error('Please provide valid code to debug');
+      }
+
+      const results = await this.aiToolsService.debugCode(
         this.codeToDebug,
         this.selectedLanguage
       );
-      this.toastr.success('Code analysis complete');
+
+      // Validate results
+      if (!results || (!results.errors && !results.suggestions)) {
+        throw new Error('Invalid debug results received');
+      }
+
+      this.debugResults = {
+        errors: results.errors || [],
+        suggestions: results.suggestions || [],
+      };
+
+      if (
+        this.debugResults.errors.length === 0 &&
+        this.debugResults.suggestions.length === 0
+      ) {
+        this.toastr.info('No issues found in the code');
+      } else {
+        this.toastr.success('Code analysis complete');
+      }
     } catch (error) {
-      this.toastr.error('Error analyzing code');
+      this.debugResults = null;
+      this.toastr.error(
+        error instanceof Error ? error.message : 'Error analyzing code'
+      );
       console.error('Debug error:', error);
     } finally {
       this.isProcessing = false;
@@ -1934,13 +1994,34 @@ export class AIToolsPageComponent implements OnInit {
 
     this.isProcessing = true;
     try {
-      this.optimizationResults = await this.aiToolsService.optimizeCode(
+      // Validate input code
+      if (this.codeToOptimize.trim().length < 5) {
+        throw new Error('Please provide valid code to optimize');
+      }
+
+      const results = await this.aiToolsService.optimizeCode(
         this.codeToOptimize,
         this.selectedLanguage
       );
+
+      // Validate optimization results
+      if (!results || !results.optimizedCode) {
+        throw new Error('Invalid optimization results received');
+      }
+
+      this.optimizationResults = {
+        optimizedCode: results.optimizedCode,
+        improvements: results.improvements || [],
+        performanceGain:
+          results.performanceGain || 'No significant improvement',
+      };
+
       this.toastr.success('Code optimization complete');
     } catch (error) {
-      this.toastr.error('Error optimizing code');
+      this.optimizationResults = null;
+      this.toastr.error(
+        error instanceof Error ? error.message : 'Error optimizing code'
+      );
       console.error('Optimization error:', error);
     } finally {
       this.isProcessing = false;
@@ -2220,4 +2301,32 @@ export class AIToolsPageComponent implements OnInit {
         return '';
     }
   }
+
+  // Add a method to validate language selection
+  private validateLanguage(language: string): boolean {
+    const supportedLanguages = ['javascript', 'typescript', 'python', 'java'];
+    if (!supportedLanguages.includes(language)) {
+      this.toastr.error(`Language ${language} is not supported`);
+      return false;
+    }
+    return true;
+  }
+
+  // Add a method to sanitize code input
+  private sanitizeCode(code: string): string {
+    // Remove potentially harmful characters or patterns
+    return code
+      .trim()
+      .replace(/[^\x20-\x7E\n\t]/g, '') // Remove non-printable characters
+      .replace(/`/g, '\\`'); // Escape backticks
+  }
+
+  // Add these properties for better error handling
+  private readonly errorMessages = {
+    emptyInput: 'Please provide input before proceeding',
+    invalidLanguage: 'Selected language is not supported',
+    processingError: 'An error occurred while processing your request',
+    networkError: 'Network error. Please check your connection and try again',
+    timeoutError: 'Request timed out. Please try again',
+  };
 }

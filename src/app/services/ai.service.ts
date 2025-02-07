@@ -42,7 +42,6 @@ export class AIService {
   }
 
   async suggestImprovements(code: string): Promise<string> {
-    this.isProcessing.next(true);
     try {
       const prompt = `Analyze this code and suggest specific improvements for:
       1. Performance optimization
@@ -50,16 +49,16 @@ export class AIService {
       3. Best practices
       4. Potential bugs
       
+      Also provide an optimized version of the code.
+      
       Code:
       ${code}`;
+
       const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return result.response.text();
     } catch (error) {
       console.error('AI Error:', error);
       throw new Error('Failed to suggest improvements');
-    } finally {
-      this.isProcessing.next(false);
     }
   }
 
@@ -91,20 +90,9 @@ export class AIService {
   ): Promise<string> {
     this.loadingService.show();
     try {
-      const result = await this.model.generateContent(`
-        Generate ${language} code for the following requirement:
-        ${prompt}
-        
-        Rules:
-        1. Only output the code, no explanations
-        2. Include helpful comments
-        3. Use best practices
-        4. Make it production-ready
-        5. Format the code properly
-      `);
-      const response = await result.response;
-      // Extract code from response, removing markdown if present
-      let code = response.text();
+      const result = await this.model.generateContent(prompt);
+      let code = result.response.text();
+      // Extract code from markdown if present
       if (code.includes('```')) {
         code = code.split('```')[1].split('```')[0];
       }

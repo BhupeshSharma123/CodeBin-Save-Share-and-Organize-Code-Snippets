@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AITool } from '../../interfaces/ai-tool.interface';
+import { AIService } from './ai.service';
 import {
   faCode,
   faBug,
@@ -154,6 +155,8 @@ export class AIToolsService {
     },
   ];
 
+  constructor(private aiService: AIService) {}
+
   getTools(): AITool[] {
     return this.tools;
   }
@@ -163,24 +166,58 @@ export class AIToolsService {
   }
 
   async generateCode(description: string, language: string): Promise<string> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return `// Generated ${language} code\nfunction example() {\n  console.log("Hello World!");\n}`;
+    const prompt = `Generate ${language} code for the following requirement:
+    ${description}
+    
+    Rules:
+    1. Only output the code, no explanations
+    2. Include helpful comments
+    3. Use best practices
+    4. Make it production-ready
+    5. Format the code properly`;
+
+    return this.aiService.generateCodeFromPrompt(prompt, language);
   }
 
   async debugCode(
     code: string,
     language: string
   ): Promise<{ errors: string[]; suggestions: string[] }> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return {
-      errors: ['Syntax error on line 3', 'Undefined variable on line 7'],
-      suggestions: [
-        'Consider using const instead of let',
-        'Add error handling for the async operation',
-      ],
-    };
+    const result = await this.aiService.suggestImprovements(code);
+
+    // Parse the AI response to extract errors and suggestions
+    const lines = result.split('\n');
+    const errors: string[] = [];
+    const suggestions: string[] = [];
+
+    let currentSection = '';
+    for (const line of lines) {
+      if (
+        line.toLowerCase().includes('error') ||
+        line.toLowerCase().includes('bug')
+      ) {
+        currentSection = 'errors';
+        continue;
+      } else if (
+        line.toLowerCase().includes('suggestion') ||
+        line.toLowerCase().includes('improvement')
+      ) {
+        currentSection = 'suggestions';
+        continue;
+      }
+
+      const cleanedLine = line
+        .trim()
+        .replace(/^[-*•]/, '')
+        .trim();
+      if (cleanedLine && currentSection === 'errors') {
+        errors.push(cleanedLine);
+      } else if (cleanedLine && currentSection === 'suggestions') {
+        suggestions.push(cleanedLine);
+      }
+    }
+
+    return { errors, suggestions };
   }
 
   async optimizeCode(
@@ -191,27 +228,36 @@ export class AIToolsService {
     improvements: string[];
     performanceGain: string;
   }> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return {
-      optimizedCode: `// Optimized ${language} code
-function optimizedExample() {
-  const cache = new Map();
-  return (n) => {
-    if (cache.has(n)) return cache.get(n);
-    const result = /* computation */;
-    cache.set(n, result);
-    return result;
-  };
-}`,
-      improvements: [
-        'Added memoization for better performance',
-        'Reduced time complexity from O(n²) to O(n)',
-        'Implemented caching strategy',
-        'Optimized loop structures',
-      ],
-      performanceGain: '~40% faster execution',
-    };
+    const result = await this.aiService.suggestImprovements(code);
+    const improvements: string[] = [];
+    let performanceGain = 'Performance improvement varies';
+    let optimizedCode = code;
+
+    // Extract optimization suggestions and code
+    const sections = result.split('\n\n');
+    for (const section of sections) {
+      if (section.toLowerCase().includes('optimized code:')) {
+        optimizedCode = section.split('optimized code:')[1].trim();
+      } else if (section.toLowerCase().includes('improvement')) {
+        const lines = section.split('\n');
+        for (const line of lines) {
+          const cleanedLine = line
+            .trim()
+            .replace(/^[-*•]/, '')
+            .trim();
+          if (
+            cleanedLine &&
+            !cleanedLine.toLowerCase().includes('improvement')
+          ) {
+            improvements.push(cleanedLine);
+          }
+        }
+      } else if (section.toLowerCase().includes('performance')) {
+        performanceGain = section.split(':')[1]?.trim() || performanceGain;
+      }
+    }
+
+    return { optimizedCode, improvements, performanceGain };
   }
 
   async explainCode(
@@ -225,44 +271,48 @@ function optimizedExample() {
       keyPoints: string[];
     };
   }> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const result = await this.aiService.explainCode(code);
+    const sections = result.split('\n\n');
+    let overview = '';
+    let complexity = '';
+    const keyPoints: string[] = [];
+    let commentedCode = code;
+
+    for (const section of sections) {
+      if (section.toLowerCase().includes('overview:')) {
+        overview = section.split('overview:')[1].trim();
+      } else if (section.toLowerCase().includes('complexity:')) {
+        complexity = section.split('complexity:')[1].trim();
+      } else if (section.toLowerCase().includes('key concepts:')) {
+        const points = section.split('\n').slice(1);
+        for (const point of points) {
+          const cleanedPoint = point
+            .trim()
+            .replace(/^[-*•]/, '')
+            .trim();
+          if (cleanedPoint) {
+            keyPoints.push(cleanedPoint);
+          }
+        }
+      } else if (section.toLowerCase().includes('commented code:')) {
+        commentedCode = section.split('commented code:')[1].trim();
+      }
+    }
+
     return {
-      commentedCode: `// Function to calculate Fibonacci sequence using dynamic programming
-function fibonacci(n: number): number {
-  // Initialize array to store Fibonacci numbers
-  const fib: number[] = new Array(n + 1);
-  
-  // Base cases
-  fib[0] = 0;
-  fib[1] = 1;
-  
-  // Calculate subsequent numbers using previous results
-  for (let i = 2; i <= n; i++) {
-    fib[i] = fib[i-1] + fib[i-2];
-  }
-  
-  // Return the nth Fibonacci number
-  return fib[n];
-}`,
+      commentedCode,
       explanation: {
-        overview:
-          'This code implements the Fibonacci sequence calculation using dynamic programming approach for optimal performance.',
-        complexity: 'Time Complexity: O(n), Space Complexity: O(n)',
-        keyPoints: [
-          'Uses dynamic programming to avoid recursive calls',
-          'Stores intermediate results in an array',
-          'Iterative approach prevents stack overflow',
-          'Efficient for large numbers',
-        ],
+        overview,
+        complexity,
+        keyPoints,
       },
     };
   }
 
   async translateCode(
     code: string,
-    fromLanguage: string,
-    toLanguage: string
+    fromLang: string,
+    toLang: string
   ): Promise<{
     translatedCode: string;
     notes: string[];
@@ -271,35 +321,51 @@ function fibonacci(n: number): number {
       issues: string[];
     };
   }> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const result = await this.aiService.translateCode(code, fromLang, toLang);
+    const sections = result.split('\n\n');
+    let translatedCode = '';
+    const notes: string[] = [];
+    const issues: string[] = [];
+    let compatibilityLevel: 'high' | 'medium' | 'low' = 'medium';
+
+    for (const section of sections) {
+      if (section.includes('```')) {
+        translatedCode = section.split('```')[1].trim();
+      } else if (section.toLowerCase().includes('note:')) {
+        const noteLines = section.split('\n').slice(1);
+        for (const line of noteLines) {
+          const cleanedNote = line
+            .trim()
+            .replace(/^[-*•]/, '')
+            .trim();
+          if (cleanedNote) {
+            notes.push(cleanedNote);
+          }
+        }
+      } else if (section.toLowerCase().includes('compatibility')) {
+        if (section.toLowerCase().includes('high')) compatibilityLevel = 'high';
+        else if (section.toLowerCase().includes('low'))
+          compatibilityLevel = 'low';
+
+        const issueLines = section.split('\n').slice(1);
+        for (const line of issueLines) {
+          const cleanedIssue = line
+            .trim()
+            .replace(/^[-*•]/, '')
+            .trim();
+          if (cleanedIssue) {
+            issues.push(cleanedIssue);
+          }
+        }
+      }
+    }
+
     return {
-      translatedCode: `# Translated from ${fromLanguage} to ${toLanguage}
-def fibonacci(n):
-    # Initialize array to store Fibonacci numbers
-    fib = [0] * (n + 1)
-    
-    # Base cases
-    fib[0] = 0
-    fib[1] = 1
-    
-    # Calculate subsequent numbers
-    for i in range(2, n + 1):
-        fib[i] = fib[i-1] + fib[i-2]
-    
-    return fib[n]`,
-      notes: [
-        'Function parameters have been adjusted for Python syntax',
-        'Array initialization uses Python list comprehension',
-        'Loop syntax has been converted to Python range()',
-        'Type annotations have been removed',
-      ],
+      translatedCode,
+      notes,
       compatibility: {
-        level: 'high',
-        issues: [
-          'Some TypeScript type safety features are not available in Python',
-          'Performance characteristics may vary between languages',
-        ],
+        level: compatibilityLevel,
+        issues,
       },
     };
   }
