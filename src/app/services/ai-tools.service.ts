@@ -1,21 +1,21 @@
 import { Injectable } from '@angular/core';
 import { AITool } from '../../interfaces/ai-tool.interface';
-import { 
-  faCode, 
-  faBug, 
-  faBolt, 
-  faComments, 
-  faLanguage, 
-  faBook, 
-  faSquareRootVariable, 
-  faDatabase, 
-  faGears, 
+import {
+  faCode,
+  faBug,
+  faBolt,
+  faComments,
+  faLanguage,
+  faBook,
+  faSquareRootVariable,
+  faDatabase,
+  faGears,
   faVial,
-  faMagnifyingGlass
+  faMagnifyingGlass,
 } from '@fortawesome/free-solid-svg-icons';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AIToolsService {
   [x: string]: any;
@@ -151,7 +151,7 @@ export class AIToolsService {
       iconBackground: 'bg-gradient-to-br from-orange-500 to-orange-600',
       isActive: false,
       backgroundPattern: 'data:image/svg+xml,...',
-    }
+    },
   ];
 
   getTools(): AITool[] {
@@ -159,34 +159,40 @@ export class AIToolsService {
   }
 
   getToolsByCategory(category: string): AITool[] {
-    return this.tools.filter(tool => tool.category === category);
+    return this.tools.filter((tool) => tool.category === category);
   }
 
   async generateCode(description: string, language: string): Promise<string> {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return `// Generated ${language} code\nfunction example() {\n  console.log("Hello World!");\n}`;
   }
 
-  async debugCode(code: string, language: string): Promise<{ errors: string[], suggestions: string[] }> {
+  async debugCode(
+    code: string,
+    language: string
+  ): Promise<{ errors: string[]; suggestions: string[] }> {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       errors: ['Syntax error on line 3', 'Undefined variable on line 7'],
       suggestions: [
         'Consider using const instead of let',
-        'Add error handling for the async operation'
-      ]
+        'Add error handling for the async operation',
+      ],
     };
   }
 
-  async optimizeCode(code: string, language: string): Promise<{
+  async optimizeCode(
+    code: string,
+    language: string
+  ): Promise<{
     optimizedCode: string;
     improvements: string[];
     performanceGain: string;
   }> {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       optimizedCode: `// Optimized ${language} code
 function optimizedExample() {
@@ -202,13 +208,16 @@ function optimizedExample() {
         'Added memoization for better performance',
         'Reduced time complexity from O(n²) to O(n)',
         'Implemented caching strategy',
-        'Optimized loop structures'
+        'Optimized loop structures',
       ],
-      performanceGain: '~40% faster execution'
+      performanceGain: '~40% faster execution',
     };
   }
 
-  async explainCode(code: string, language: string): Promise<{
+  async explainCode(
+    code: string,
+    language: string
+  ): Promise<{
     commentedCode: string;
     explanation: {
       overview: string;
@@ -217,7 +226,7 @@ function optimizedExample() {
     };
   }> {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       commentedCode: `// Function to calculate Fibonacci sequence using dynamic programming
 function fibonacci(n: number): number {
@@ -237,21 +246,22 @@ function fibonacci(n: number): number {
   return fib[n];
 }`,
       explanation: {
-        overview: 'This code implements the Fibonacci sequence calculation using dynamic programming approach for optimal performance.',
+        overview:
+          'This code implements the Fibonacci sequence calculation using dynamic programming approach for optimal performance.',
         complexity: 'Time Complexity: O(n), Space Complexity: O(n)',
         keyPoints: [
           'Uses dynamic programming to avoid recursive calls',
           'Stores intermediate results in an array',
           'Iterative approach prevents stack overflow',
-          'Efficient for large numbers'
-        ]
-      }
+          'Efficient for large numbers',
+        ],
+      },
     };
   }
 
   async translateCode(
-    code: string, 
-    fromLanguage: string, 
+    code: string,
+    fromLanguage: string,
     toLanguage: string
   ): Promise<{
     translatedCode: string;
@@ -262,7 +272,7 @@ function fibonacci(n: number): number {
     };
   }> {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       translatedCode: `# Translated from ${fromLanguage} to ${toLanguage}
 def fibonacci(n):
@@ -282,15 +292,15 @@ def fibonacci(n):
         'Function parameters have been adjusted for Python syntax',
         'Array initialization uses Python list comprehension',
         'Loop syntax has been converted to Python range()',
-        'Type annotations have been removed'
+        'Type annotations have been removed',
       ],
       compatibility: {
         level: 'high',
         issues: [
           'Some TypeScript type safety features are not available in Python',
-          'Performance characteristics may vary between languages'
-        ]
-      }
+          'Performance characteristics may vary between languages',
+        ],
+      },
     };
   }
 
@@ -313,28 +323,28 @@ def fibonacci(n):
       examples?: string[];
     };
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       documentation: `# Project Name\n\n## Description\nA detailed project description...\n\n## Installation\n\`\`\`bash\nnpm install\n\`\`\`\n\n## Usage\n\`\`\`javascript\nconst example = require('./example');\n\`\`\``,
       sections: [
         {
           title: 'Overview',
-          content: 'This project provides functionality for...'
+          content: 'This project provides functionality for...',
         },
         {
           title: 'API Reference',
-          content: 'Detailed API documentation...'
+          content: 'Detailed API documentation...',
         },
         {
           title: 'Examples',
-          content: 'Usage examples and code snippets...'
-        }
+          content: 'Usage examples and code snippets...',
+        },
       ],
       metadata: {
         dependencies: ['express', 'typescript', 'mongoose'],
         apiEndpoints: ['/api/v1/users', '/api/v1/auth'],
-        examples: ['Basic usage', 'Advanced configuration']
-      }
+        examples: ['Basic usage', 'Advanced configuration'],
+      },
     };
   }
 
@@ -354,7 +364,7 @@ def fibonacci(n):
     }[];
     examples: string[];
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$',
       explanation: [
@@ -362,23 +372,23 @@ def fibonacci(n):
         'Allows letters, numbers, and common email characters',
         'Requires @ symbol',
         'Validates domain format',
-        'Ensures TLD is at least 2 characters'
+        'Ensures TLD is at least 2 characters',
       ],
       testResults: [
         {
           input: 'test@example.com',
-          matches: true
+          matches: true,
         },
         {
           input: 'invalid.email',
-          matches: false
-        }
+          matches: false,
+        },
       ],
       examples: [
         'user@domain.com',
         'name.surname@company.co.uk',
-        'user+tag@domain.org'
-      ]
+        'user+tag@domain.org',
+      ],
     };
   }
 
@@ -401,7 +411,7 @@ def fibonacci(n):
       output?: any;
     };
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       query: `SELECT u.name, u.email, COUNT(o.id) as order_count
 FROM users u
@@ -411,34 +421,45 @@ GROUP BY u.id, u.name, u.email
 HAVING COUNT(o.id) > 5
 ORDER BY order_count DESC
 LIMIT 10;`,
-      explanation: 'This query retrieves active users with more than 5 orders, showing their names, emails, and order counts.',
+      explanation:
+        'This query retrieves active users with more than 5 orders, showing their names, emails, and order counts.',
       optimization: {
         suggestions: [
           'Add index on users.status for faster filtering',
           'Add composite index on orders(user_id, id) for efficient joining and counting',
-          'Consider partitioning orders table by date if dealing with large datasets'
+          'Consider partitioning orders table by date if dealing with large datasets',
         ],
         indexRecommendations: [
           'CREATE INDEX idx_users_status ON users(status);',
-          'CREATE INDEX idx_orders_user_count ON orders(user_id, id);'
-        ]
+          'CREATE INDEX idx_orders_user_count ON orders(user_id, id);',
+        ],
       },
       sampleData: {
         input: {
           users: [
-            { id: 1, name: 'John Doe', email: 'john@example.com', status: 'active' },
-            { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'active' }
+            {
+              id: 1,
+              name: 'John Doe',
+              email: 'john@example.com',
+              status: 'active',
+            },
+            {
+              id: 2,
+              name: 'Jane Smith',
+              email: 'jane@example.com',
+              status: 'active',
+            },
           ],
           orders: [
             { id: 1, user_id: 1, total: 100 },
-            { id: 2, user_id: 1, total: 200 }
-          ]
+            { id: 2, user_id: 1, total: 200 },
+          ],
         },
         output: [
           { name: 'John Doe', email: 'john@example.com', order_count: 6 },
-          { name: 'Jane Smith', email: 'jane@example.com', order_count: 8 }
-        ]
-      }
+          { name: 'Jane Smith', email: 'jane@example.com', order_count: 8 },
+        ],
+      },
     };
   }
 
@@ -470,7 +491,7 @@ LIMIT 10;`,
     }>;
     documentation: string;
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Example response for a User model
     return {
@@ -490,12 +511,12 @@ async getUsers(
 }`,
           params: {
             page: { type: 'number', default: 1 },
-            limit: { type: 'number', default: 10 }
+            limit: { type: 'number', default: 10 },
           },
           response: {
             data: ['User[]'],
-            meta: { total: 'number', pages: 'number', currentPage: 'number' }
-          }
+            meta: { total: 'number', pages: 'number', currentPage: 'number' },
+          },
         },
         {
           path: '/api/users/:id',
@@ -510,8 +531,8 @@ async getUser(@Param('id') id: string): Promise<User> {
   return user;
 }`,
           params: {
-            id: { type: 'string', required: true }
-          }
+            id: { type: 'string', required: true },
+          },
         },
         {
           path: '/api/users',
@@ -522,8 +543,8 @@ async getUser(@Param('id') id: string): Promise<User> {
 @UseGuards(AuthGuard)
 async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
   return this.userService.create(createUserDto);
-}`
-        }
+}`,
+        },
       ],
       models: [
         {
@@ -548,7 +569,7 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
-}`
+}`,
         },
         {
           name: 'CreateUserDto',
@@ -564,8 +585,8 @@ export class CreateUserDto {
   @IsString()
   @MinLength(6)
   password: string;
-}`
-        }
+}`,
+        },
       ],
       middleware: [
         {
@@ -590,7 +611,7 @@ export class AuthGuard implements CanActivate {
     }
   }
 }`,
-          purpose: 'JWT Authentication Guard'
+          purpose: 'JWT Authentication Guard',
         },
         {
           name: 'ValidationPipe',
@@ -602,8 +623,8 @@ app.useGlobalPipes(
     forbidNonWhitelisted: true,
   })
 );`,
-          purpose: 'Global request validation'
-        }
+          purpose: 'Global request validation',
+        },
       ],
       documentation: `
 # API Documentation
@@ -652,7 +673,7 @@ Body:
   "password": string
 }
 \`\`\`
-`
+`,
     };
   }
 
@@ -682,7 +703,7 @@ Body:
       code: string;
     }[];
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       testCode: `
 describe('UserService', () => {
@@ -724,7 +745,7 @@ describe('UserService', () => {
         statements: 95,
         branches: 85,
         functions: 100,
-        lines: 92
+        lines: 92,
       },
       testCases: [
         {
@@ -733,21 +754,21 @@ describe('UserService', () => {
           expectedOutput: {
             data: [
               { id: 1, name: 'John' },
-              { id: 2, name: 'Jane' }
+              { id: 2, name: 'Jane' },
             ],
-            meta: { total: 2, pages: 1, currentPage: 1 }
+            meta: { total: 2, pages: 1, currentPage: 1 },
           },
-          type: 'positive'
+          type: 'positive',
         },
         {
           description: 'Should handle empty result set',
           input: { page: 999, limit: 10 },
           expectedOutput: {
             data: [],
-            meta: { total: 0, pages: 0, currentPage: 999 }
+            meta: { total: 0, pages: 0, currentPage: 999 },
           },
-          type: 'edge'
-        }
+          type: 'edge',
+        },
       ],
       mocks: [
         {
@@ -756,9 +777,9 @@ describe('UserService', () => {
 const repositoryMockFactory: () => MockType<Repository<any>> = jest.fn(() => ({
   find: jest.fn(),
   count: jest.fn(),
-}));`
-        }
-      ]
+}));`,
+        },
+      ],
     };
   }
 
@@ -794,12 +815,12 @@ const repositoryMockFactory: () => MockType<Repository<any>> = jest.fn(() => ({
       reference?: string;
     }>;
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return {
       summary: {
         score: 78,
         level: 'warning',
-        message: 'Code has some potential security and performance issues'
+        message: 'Code has some potential security and performance issues',
       },
       issues: [
         {
@@ -807,14 +828,15 @@ const repositoryMockFactory: () => MockType<Repository<any>> = jest.fn(() => ({
           severity: 'high',
           line: 23,
           message: 'SQL Injection vulnerability detected',
-          suggestion: 'Use parameterized queries instead of string concatenation',
+          suggestion:
+            'Use parameterized queries instead of string concatenation',
           codeExample: `
 // Instead of:
 const query = \`SELECT * FROM users WHERE id = \${userId}\`;
 
 // Use:
 const query = 'SELECT * FROM users WHERE id = ?';
-const params = [userId];`
+const params = [userId];`,
         },
         {
           type: 'performance',
@@ -827,8 +849,8 @@ const params = [userId];`
 const unique = arr.filter((v, i) => arr.indexOf(v) === i);
 
 // Use:
-const unique = [...new Set(arr)];`
-        }
+const unique = [...new Set(arr)];`,
+        },
       ],
       improvements: [
         {
@@ -844,21 +866,21 @@ const unique = [...new Set(arr)];`
 +      this.cache.set(id, await this.fetchData(id));
 +    }
 +    return this.cache.get(id);
-   }`
-        }
+   }`,
+        },
       ],
       bestPractices: [
         {
           title: 'Use TypeScript strict mode',
           description: 'Enable strict type checking',
-          reference: 'https://www.typescriptlang.org/tsconfig#strict'
+          reference: 'https://www.typescriptlang.org/tsconfig#strict',
         },
         {
           title: 'Follow SOLID principles',
           description: 'Apply single responsibility principle',
-          reference: 'https://en.wikipedia.org/wiki/SOLID'
-        }
-      ]
+          reference: 'https://en.wikipedia.org/wiki/SOLID',
+        },
+      ],
     };
   }
 }

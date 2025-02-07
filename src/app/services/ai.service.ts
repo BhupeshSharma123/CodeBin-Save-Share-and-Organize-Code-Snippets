@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,23 +14,30 @@ export class AIService {
   private isProcessing = new BehaviorSubject<boolean>(false);
   isProcessing$ = this.isProcessing.asObservable();
 
-  constructor() {
+  constructor(private loadingService: LoadingService) {
     this.genAI = new GoogleGenerativeAI(environment.geminiApiKey);
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
   }
 
   async explainCode(code: string): Promise<string> {
-    this.isProcessing.next(true);
+    this.loadingService.show();
     try {
-      const prompt = `Explain this code in detail, focusing on its purpose and how it works:\n\n${code}`;
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      const result = await this.model.generateContent(`
+        Explain this code in detail:
+        ${code}
+        
+        Format the explanation with:
+        1. Overview
+        2. Key concepts
+        3. Line-by-line explanation
+        4. Best practices used
+      `);
+      return result.response.text();
     } catch (error) {
       console.error('AI Error:', error);
       throw new Error('Failed to explain code');
     } finally {
-      this.isProcessing.next(false);
+      this.loadingService.hide();
     }
   }
 
@@ -81,21 +89,31 @@ export class AIService {
     prompt: string,
     language: string
   ): Promise<string> {
-    this.isProcessing.next(true);
+    this.loadingService.show();
     try {
-      const fullPrompt = `Generate ${language} code that:
-      1. Implements the following requirement: ${prompt}
-      2. Includes detailed comments explaining the code
-      3. Follows best practices
-      4. Is production-ready and efficient`;
-      const result = await this.model.generateContent(fullPrompt);
+      const result = await this.model.generateContent(`
+        Generate ${language} code for the following requirement:
+        ${prompt}
+        
+        Rules:
+        1. Only output the code, no explanations
+        2. Include helpful comments
+        3. Use best practices
+        4. Make it production-ready
+        5. Format the code properly
+      `);
       const response = await result.response;
-      return response.text();
+      // Extract code from response, removing markdown if present
+      let code = response.text();
+      if (code.includes('```')) {
+        code = code.split('```')[1].split('```')[0];
+      }
+      return code.trim();
     } catch (error) {
       console.error('AI Error:', error);
       throw new Error('Failed to generate code');
     } finally {
-      this.isProcessing.next(false);
+      this.loadingService.hide();
     }
   }
 
