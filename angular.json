@@ -27,8 +27,18 @@
                 "output": "/assets/monaco/"
               }
             ],
-            "styles": ["src/styles.css", "node_modules/ngx-toastr/toastr.css"],
-            "scripts": []
+            "styles": [
+              "src/styles.css",
+              "node_modules/ngx-toastr/toastr.css",
+              "node_modules/prismjs/themes/prism-tomorrow.css"
+            ],
+            "scripts": [
+              "node_modules/prismjs/prism.js",
+              "node_modules/prismjs/components/prism-python.js",
+              "node_modules/prismjs/components/prism-javascript.js",
+              "node_modules/prismjs/components/prism-typescript.js",
+              "node_modules/prismjs/components/prism-java.js"
+            ]
           },
           "configurations": {
             "production": {
