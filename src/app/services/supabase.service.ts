@@ -4,10 +4,12 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface SnipAI {
+  is_public: any;
   id?: string;
   title: string;
   code: string;
   language: string;
+  category: string;
   user_id: string;
   tags?: string[];
   description?: string;
@@ -19,6 +21,7 @@ export interface SnipAI {
   providedIn: 'root',
 })
 export class SupabaseService {
+  [x: string]: any;
   private supabase: SupabaseClient;
   private currentUser = new BehaviorSubject<User | null>(null);
 
@@ -66,16 +69,10 @@ export class SupabaseService {
   }
 
   // SnipAI  methods
-  async createCodeBin(bin: Omit<SnipAI, 'user_id' | 'id'>): Promise<SnipAI> {
-    const user = await this.supabase.auth.getUser();
-    if (!user.data.user) throw new Error('User not authenticated');
-
+  async createCodeBin(bin: SnipAI): Promise<SnipAI> {
     const { data, error } = await this.supabase
-      .from('codebins')
-      .insert({
-        ...bin,
-        user_id: user.data.user.id,
-      })
+      .from('code_bins')
+      .insert([bin])
       .select()
       .single();
 
@@ -83,10 +80,10 @@ export class SupabaseService {
     return data;
   }
 
-  async updateCodeBin(id: string, updates: Partial<SnipAI>): Promise<SnipAI> {
+  async updateCodeBin(id: string, bin: SnipAI): Promise<SnipAI> {
     const { data, error } = await this.supabase
-      .from('codebins')
-      .update(updates)
+      .from('code_bins')
+      .update(bin)
       .eq('id', id)
       .select()
       .single();
@@ -97,27 +94,25 @@ export class SupabaseService {
 
   async getCodeBin(id: string): Promise<SnipAI> {
     const { data, error } = await this.supabase
-      .from('codebins')
+      .from('code_bins')
       .select()
       .eq('id', id)
       .single();
 
     if (error) throw error;
+    if (!data) throw new Error('Snippet not found');
+
     return data;
   }
 
   async getUserCodeBins(): Promise<SnipAI[]> {
-    const user = await this.supabase.auth.getUser();
-    if (!user.data.user) throw new Error('User not authenticated');
-
     const { data, error } = await this.supabase
-      .from('codebins')
-      .select()
-      .eq('user_id', user.data.user.id)
+      .from('code_bins')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
   }
 
   async deleteCodeBin(id: string): Promise<void> {
@@ -246,5 +241,76 @@ export class SupabaseService {
       password: newPassword,
     });
     if (error) throw error;
+  }
+
+  async shareCodeBin(binId: string, isPublic: boolean = true) {
+    const { data, error } = await this.supabase
+      .from('code_bins')
+      .update({ is_public: isPublic })
+      .eq('id', binId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getPublicCodeBin(id: string): Promise<SnipAI> {
+    const { data, error } = await this.supabase
+      .from('code_bins')
+      .select()
+      .eq('id', id)
+      .eq('is_public', true)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async createVersion(codeBinId: string, code: string, comment?: string) {
+    // Get the latest version number
+    const { data: versions } = await this.supabase
+      .from('code_bin_versions')
+      .select('version_number')
+      .eq('code_bin_id', codeBinId)
+      .order('version_number', { ascending: false })
+      .limit(1);
+
+    const nextVersion = versions?.length ? versions[0].version_number + 1 : 1;
+
+    const { data, error } = await this.supabase
+      .from('code_bin_versions')
+      .insert({
+        code_bin_id: codeBinId,
+        version_number: nextVersion,
+        code,
+        comment,
+        created_by: (await this.getCurrentUser()).data.user?.id,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getVersions(codeBinId: string) {
+    const { data, error } = await this.supabase
+      .from('code_bin_versions')
+      .select(
+        `
+        id,
+        version_number,
+        code,
+        created_at,
+        comment,
+        created_by
+      `
+      )
+      .eq('code_bin_id', codeBinId)
+      .order('version_number', { ascending: false });
+
+    if (error) throw error;
+    return data;
   }
 }

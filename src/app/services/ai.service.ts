@@ -13,6 +13,8 @@ export class AIService {
   private model: any;
   private isProcessing = new BehaviorSubject<boolean>(false);
   isProcessing$ = this.isProcessing.asObservable();
+  private apiUrl = environment.openaiApiUrl;
+  private apiKey = environment.openaiApiKey;
 
   constructor(private loadingService: LoadingService) {
     this.genAI = new GoogleGenerativeAI(environment.geminiApiKey);
@@ -248,6 +250,46 @@ export class AIService {
       return result.response.text();
     } finally {
       this.isProcessing.next(false);
+    }
+  }
+
+  async generateCode(prompt: string, language: string): Promise<string> {
+    this.loadingService.show();
+    try {
+      const result = await this.model.generateContent(`
+        Write a complete ${language} code implementation for:
+        ${prompt}
+        
+        Requirements:
+        - Only output valid ${language} code
+        - Include error handling
+        - Follow best practices
+        - Add basic comments
+        Return only the code without explanations.
+      `);
+
+      if (!result || !result.response) {
+        throw new Error('No response from AI model');
+      }
+
+      let code = result.response.text();
+      
+      // Clean up the response
+      if (code.includes('```')) {
+        const matches = code.match(/```(?:\w+)?\n([\s\S]+?)```/);
+        code = matches ? matches[1] : code;
+      }
+
+      if (!code.trim()) {
+        throw new Error('Generated code is empty');
+      }
+
+      return code.trim();
+    } catch (error) {
+      console.error('Code Generation Error:', error);
+      throw new Error(`Failed to generate code: ${error}`);
+    } finally {
+      this.loadingService.hide();
     }
   }
 }

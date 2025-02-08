@@ -98,7 +98,9 @@ import { MonacoEditorService } from '../../app/services/monaco-editor.service';
           <!-- Code Output Area -->
           <div *ngIf="codeOutput !== null" class="mt-4">
             <div class="flex justify-between items-center mb-2">
-              <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              <h3
+                class="text-lg font-semibold text-gray-700 dark:text-gray-300"
+              >
                 Console Output
               </h3>
               <button
@@ -111,7 +113,10 @@ import { MonacoEditorService } from '../../app/services/monaco-editor.service';
             <div
               class="bg-[#1e1e1e] rounded-lg p-4 font-mono text-sm overflow-auto max-h-48 terminal-output"
             >
-              <pre [innerHTML]="formattedOutput" class="text-white font-[Consolas,Monaco,'Courier New',monospace]"></pre>
+              <pre
+                [innerHTML]="formattedOutput"
+                class="text-white font-[Consolas,Monaco,'Courier New',monospace]"
+              ></pre>
             </div>
           </div>
         </div>
@@ -177,6 +182,21 @@ import { MonacoEditorService } from '../../app/services/monaco-editor.service';
             <div class="loading-spinner"></div>
             <p class="loading-text">Generating Code...</p>
           </div>
+        </div>
+
+        <div class="mb-4">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Version Comment (optional)
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="versionComment"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Describe your changes..."
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          />
         </div>
 
         <div class="flex justify-end space-x-4 mt-6">
@@ -255,16 +275,36 @@ import { MonacoEditorService } from '../../app/services/monaco-editor.service';
         white-space: pre-wrap;
         word-wrap: break-word;
       }
-      .terminal-output .string { color: #a8ff60; }
-      .terminal-output .number { color: #ff9d00; }
-      .terminal-output .boolean { color: #ff628c; }
-      .terminal-output .null { color: #ff628c; }
-      .terminal-output .undefined { color: #ff628c; }
-      .terminal-output .error { color: #ff0000; }
-      .terminal-output .console-log { color: #cccccc; }
-      .terminal-output .console-info { color: #6fb3d2; }
-      .terminal-output .console-warn { color: #ffcb6b; }
-      .terminal-output .console-error { color: #ff5370; }
+      .terminal-output .string {
+        color: #a8ff60;
+      }
+      .terminal-output .number {
+        color: #ff9d00;
+      }
+      .terminal-output .boolean {
+        color: #ff628c;
+      }
+      .terminal-output .null {
+        color: #ff628c;
+      }
+      .terminal-output .undefined {
+        color: #ff628c;
+      }
+      .terminal-output .error {
+        color: #ff0000;
+      }
+      .terminal-output .console-log {
+        color: #cccccc;
+      }
+      .terminal-output .console-info {
+        color: #6fb3d2;
+      }
+      .terminal-output .console-warn {
+        color: #ffcb6b;
+      }
+      .terminal-output .console-error {
+        color: #ff5370;
+      }
     `,
   ],
 })
@@ -282,6 +322,15 @@ export class CodeBinComponent implements OnInit {
   selectedAIAction: string = '';
   selectedTemplate: string = '';
   codeOutput: string | null = null;
+  categories: string[] = [
+    'Utilities',
+    'Algorithms',
+    'UI Components',
+    'API',
+    'Database',
+  ];
+  selectedCategory: string = 'Utilities';
+  versionComment = '';
 
   constructor(
     private fb: FormBuilder,
@@ -296,6 +345,7 @@ export class CodeBinComponent implements OnInit {
       title: ['', Validators.required],
       language: ['javascript', Validators.required],
       code: ['', Validators.required],
+      category: ['Utilities', Validators.required],
     });
   }
 
@@ -311,6 +361,7 @@ export class CodeBinComponent implements OnInit {
           title: bin.title,
           language: bin.language,
           code: bin.code,
+          category: bin.category,
         });
       } catch (error: any) {
         this.toastr.error('Error loading code bin');
@@ -328,16 +379,38 @@ export class CodeBinComponent implements OnInit {
     if (this.binForm.valid) {
       this.isSubmitting = true;
       try {
+        const user = await this.supabaseService.getCurrentUser();
+        const binData: SnipAI = {
+          ...this.binForm.value,
+          user_id: user.data.user?.id || '',
+        };
+
         if (this.isEditing && this.binId) {
-          await this.supabaseService.updateCodeBin(
+          // Update existing bin
+          const updatedBin = await this.supabaseService.updateCodeBin(
             this.binId,
-            this.binForm.value
+            {
+              ...binData,
+              id: this.binId,
+            }
           );
+
+          // Create version record
+          if (this.versionComment) {
+            await this.supabaseService.createVersion(
+              this.binId,
+              binData.code,
+              this.versionComment
+            );
+          }
+
           this.toastr.success('Code bin updated successfully');
         } else {
-          await this.supabaseService.createCodeBin(this.binForm.value);
+          // Create new bin
+          const newBin = await this.supabaseService.createCodeBin(binData);
           this.toastr.success('Code bin created successfully');
         }
+
         this.router.navigate(['/view']);
       } catch (error: any) {
         this.toastr.error(error.message || 'Error saving code bin');
@@ -448,24 +521,32 @@ export class CodeBinComponent implements OnInit {
     // Split output into lines
     return this.codeOutput
       .split('\n')
-      .map(line => {
+      .map((line) => {
         // Style console methods
         if (line.includes('console.log')) {
-          return `<span class="console-log">${this.syntaxHighlight(line)}</span>`;
+          return `<span class="console-log">${this.syntaxHighlight(
+            line
+          )}</span>`;
         }
         if (line.includes('console.error')) {
-          return `<span class="console-error">${this.syntaxHighlight(line)}</span>`;
+          return `<span class="console-error">${this.syntaxHighlight(
+            line
+          )}</span>`;
         }
         if (line.includes('console.warn')) {
-          return `<span class="console-warn">${this.syntaxHighlight(line)}</span>`;
+          return `<span class="console-warn">${this.syntaxHighlight(
+            line
+          )}</span>`;
         }
         if (line.includes('console.info')) {
-          return `<span class="console-info">${this.syntaxHighlight(line)}</span>`;
+          return `<span class="console-info">${this.syntaxHighlight(
+            line
+          )}</span>`;
         }
         if (line.startsWith('Error:')) {
           return `<span class="error">${line}</span>`;
         }
-        
+
         // Default syntax highlighting
         return this.syntaxHighlight(line);
       })
@@ -474,21 +555,29 @@ export class CodeBinComponent implements OnInit {
 
   private syntaxHighlight(text: string): string {
     // Replace string literals
-    text = text.replace(/"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'|`([^`\\]*(\\.[^`\\]*)*)`/g, 
-      match => `<span class="string">${match}</span>`);
-    
+    text = text.replace(
+      /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'|`([^`\\]*(\\.[^`\\]*)*)`/g,
+      (match) => `<span class="string">${match}</span>`
+    );
+
     // Replace numbers
-    text = text.replace(/\b(\d+(\.\d+)?)\b/g, 
-      match => `<span class="number">${match}</span>`);
-    
+    text = text.replace(
+      /\b(\d+(\.\d+)?)\b/g,
+      (match) => `<span class="number">${match}</span>`
+    );
+
     // Replace booleans
-    text = text.replace(/\b(true|false)\b/g, 
-      match => `<span class="boolean">${match}</span>`);
-    
+    text = text.replace(
+      /\b(true|false)\b/g,
+      (match) => `<span class="boolean">${match}</span>`
+    );
+
     // Replace null and undefined
-    text = text.replace(/\b(null|undefined)\b/g, 
-      match => `<span class="null">${match}</span>`);
-    
+    text = text.replace(
+      /\b(null|undefined)\b/g,
+      (match) => `<span class="null">${match}</span>`
+    );
+
     return text;
   }
 

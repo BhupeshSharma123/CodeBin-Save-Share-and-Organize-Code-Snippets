@@ -6,16 +6,18 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { SupabaseService, SnipAI } from '../../app/services/supabase.service';
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TagInputComponent } from '../tag-input/tag-input.component';
+import { ExportService } from '../../app/services/export.service';
 
 @Component({
   selector: 'app-data-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, TagInputComponent],
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Sidebar - Only show in list view -->
@@ -70,6 +72,17 @@ import { FormsModule } from '@angular/forms';
               }}</span>
             </button>
           </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+            Tags
+          </h3>
+          <app-tag-input
+            [(tags)]="selectedTags"
+            (tagsChange)="filterByTags()"
+          ></app-tag-input>
         </div>
 
         <!-- Snippet List -->
@@ -271,6 +284,115 @@ import { FormsModule } from '@angular/forms';
                     </div>
                   </div>
                 </div>
+
+                <!-- Version History button -->
+                <button
+                  (click)="showVersionHistory(selectedBin.id!)"
+                  class="inline-flex items-center px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded hover:bg-purple-200 dark:hover:bg-purple-800"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  History
+                </button>
+
+                <!-- Share button -->
+                <button
+                  (click)="toggleShare(selectedBin)"
+                  class="inline-flex items-center px-3 py-1 text-sm"
+                  [class]="
+                    selectedBin.is_public
+                      ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  "
+                >
+                  <svg
+                    class="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                    />
+                  </svg>
+                  {{ selectedBin.is_public ? 'Public' : 'Private' }}
+                </button>
+
+                <!-- Export/Import -->
+                <div class="relative">
+                  <button
+                    (click)="showExportModal = true"
+                    class="inline-flex items-center px-3 py-1 text-sm bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-800"
+                  >
+                    <svg
+                      class="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Export/Import
+                  </button>
+
+                  <!-- Export Modal -->
+                  <div
+                    *ngIf="showExportModal"
+                    class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50"
+                  >
+                    <div class="py-1">
+                      <button
+                        (click)="exportToGist(selectedBin)"
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Export to GitHub Gist
+                      </button>
+                      <button
+                        (click)="exportToPDF(selectedBin)"
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Export as PDF
+                      </button>
+                      <button
+                        (click)="exportToMarkdown(selectedBin)"
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Export as Markdown
+                      </button>
+                      <button
+                        (click)="backupAllSnippets()"
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Backup All Snippets
+                      </button>
+                      <button
+                        (click)="importFromGist()"
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Import from Gist
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <pre
@@ -295,6 +417,55 @@ import { FormsModule } from '@angular/forms';
         </div>
       </div>
     </div>
+
+    <!-- Version History Modal -->
+    <div
+      *ngIf="showVersionModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+      >
+        <div class="p-4 border-b dark:border-gray-700">
+          <h2 class="text-xl font-semibold">Version History</h2>
+        </div>
+        <div class="p-4">
+          <div
+            *ngFor="let version of versions"
+            class="mb-4 p-4 border rounded dark:border-gray-700"
+          >
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-semibold"
+                >Version {{ version.version_number }}</span
+              >
+              <span class="text-sm text-gray-500">{{
+                version.created_at | date
+              }}</span>
+            </div>
+            <p
+              *ngIf="version.comment"
+              class="text-gray-600 dark:text-gray-400 mb-2"
+            >
+              {{ version.comment }}
+            </p>
+            <button
+              (click)="restoreVersion(version)"
+              class="text-blue-600 dark:text-blue-400 text-sm hover:underline"
+            >
+              Restore this version
+            </button>
+          </div>
+        </div>
+        <div class="p-4 border-t dark:border-gray-700">
+          <button
+            (click)="closeVersionModal()"
+            class="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   `,
 })
 export class DataViewComponent implements OnInit {
@@ -313,33 +484,40 @@ export class DataViewComponent implements OnInit {
     'Database',
   ];
   filteredBins: SnipAI[] = [];
+  availableTags: string[] = [];
+  selectedTags: string[] = [];
+  versions: any[] = [];
+  showVersionModal = false;
+  showExportModal = false;
+  githubToken = '';
 
   constructor(
     public route: ActivatedRoute,
+    private router: Router,
     private supabaseService: SupabaseService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private exportService: ExportService
   ) {}
 
   async ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
+    try {
+      const id = this.route.snapshot.paramMap.get('id');
 
-    if (id) {
-      // Single snippet view
-      try {
+      if (id) {
+        // Single snippet view
         this.selectedBin = await this.supabaseService.getCodeBin(id);
-      } catch (error) {
-        console.error('Error fetching snippet:', error);
+        if (!this.selectedBin) {
+          this.toastr.error('Snippet not found');
+          this.router.navigate(['/view']);
+        }
+      } else {
+        // List view
+        await this.loadSnippets();
       }
-    } else {
-      // List view
-      try {
-        this.codeBins = await this.supabaseService.getUserCodeBins();
-      } catch (error) {
-        console.error('Error fetching snippets:', error);
-      }
+    } catch (error) {
+      this.toastr.error('Error loading snippets');
+      console.error('Error:', error);
     }
-
-    this.filteredBins = this.codeBins;
   }
 
   selectBin(bin: SnipAI) {
@@ -422,6 +600,17 @@ export class DataViewComponent implements OnInit {
     this.filterSnippets();
   }
 
+  filterByTags() {
+    if (this.selectedTags.length === 0) {
+      this.filteredBins = this.codeBins;
+      return;
+    }
+
+    this.filteredBins = this.codeBins.filter((bin) =>
+      this.selectedTags.every((tag) => bin.tags?.includes(tag))
+    );
+  }
+
   filterSnippets() {
     let filtered = [...this.codeBins];
 
@@ -443,47 +632,198 @@ export class DataViewComponent implements OnInit {
       );
     }
 
+    // Add tag filtering
+    if (this.selectedTags.length > 0) {
+      filtered = filtered.filter((bin) =>
+        this.selectedTags.every((tag) => bin.tags?.includes(tag))
+      );
+    }
+
     this.filteredBins = filtered;
   }
 
   getCategory(bin: SnipAI): string {
-    // Smart categorization based on code content and title
-    const content = (bin.title + ' ' + bin.code).toLowerCase();
-
-    if (
-      content.includes('api') ||
-      content.includes('fetch') ||
-      content.includes('axios')
-    ) {
-      return 'API';
-    }
-    if (
-      content.includes('component') ||
-      content.includes('render') ||
-      content.includes('ui')
-    ) {
-      return 'UI Components';
-    }
-    if (
-      content.includes('sort') ||
-      content.includes('search') ||
-      content.includes('algorithm')
-    ) {
-      return 'Algorithms';
-    }
-    if (
-      content.includes('sql') ||
-      content.includes('database') ||
-      content.includes('query')
-    ) {
-      return 'Database';
-    }
-    return 'Utilities';
+    return bin.category || 'Utilities';
   }
 
   getCategoryCount(category: string): number {
     if (category === 'All') return this.codeBins.length;
     return this.codeBins.filter((bin) => this.getCategory(bin) === category)
       .length;
+  }
+
+  async updateCategory(bin: SnipAI, newCategory: string) {
+    try {
+      await this.supabaseService.updateCodeBin(bin.id!, {
+        ...bin,
+        category: newCategory,
+      });
+      bin.category = newCategory;
+      this.toastr.success('Category updated successfully');
+    } catch (error) {
+      this.toastr.error('Error updating category');
+    }
+  }
+
+  async showVersionHistory(binId: string) {
+    try {
+      this.versions = await this.supabaseService.getVersions(binId);
+      this.showVersionModal = true;
+    } catch (error) {
+      this.toastr.error('Error loading version history');
+    }
+  }
+
+  closeVersionModal() {
+    this.showVersionModal = false;
+  }
+
+  async restoreVersion(version: any) {
+    if (!this.selectedBin) return;
+
+    try {
+      await this.supabaseService.updateCodeBin(this.selectedBin.id!, {
+        ...this.selectedBin,
+        code: version.code,
+      });
+
+      // Create new version to track the restoration
+      await this.supabaseService.createVersion(
+        this.selectedBin.id!,
+        version.code,
+        `Restored from version ${version.version_number}`
+      );
+
+      this.selectedBin.code = version.code;
+      this.closeVersionModal();
+      this.toastr.success('Version restored successfully');
+    } catch (error) {
+      this.toastr.error('Error restoring version');
+    }
+  }
+
+  async toggleShare(bin: SnipAI) {
+    try {
+      const updated = await this.supabaseService.shareCodeBin(
+        bin.id!,
+        !bin.is_public
+      );
+      bin.is_public = updated.is_public;
+      this.toastr.success(
+        bin.is_public ? 'Snippet is now public' : 'Snippet is now private'
+      );
+    } catch (error) {
+      this.toastr.error('Error updating sharing settings');
+    }
+  }
+
+  // Export methods
+  async exportToGist(snippet: SnipAI) {
+    try {
+      // Prompt for GitHub token if not stored
+      if (!this.githubToken) {
+        this.githubToken = prompt('Please enter your GitHub token:') || '';
+        if (!this.githubToken) {
+          this.toastr.error('GitHub token is required');
+          return;
+        }
+      }
+
+      const url = await this.exportService.exportToGist(
+        snippet,
+        this.githubToken
+      );
+      if (url) {
+        this.toastr.success('Successfully exported to GitHub Gist');
+        window.open(url, '_blank');
+      }
+    } catch (error: any) {
+      this.toastr.error(error.message || 'Failed to export to GitHub Gist');
+      // Clear token if unauthorized
+      if (error.status === 401) {
+        this.githubToken = '';
+      }
+    }
+  }
+
+  async exportToPDF(snippet: SnipAI) {
+    try {
+      const pdfBlob = await this.exportService.exportToPDF(snippet);
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${snippet.title}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      this.toastr.success('PDF exported successfully');
+    } catch (error) {
+      this.toastr.error('Failed to export PDF');
+    }
+  }
+
+  exportToMarkdown(snippet: SnipAI) {
+    try {
+      const markdown = this.exportService.exportToMarkdown(snippet);
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${snippet.title}.md`;
+      link.click();
+      URL.revokeObjectURL(url);
+      this.toastr.success('Markdown exported successfully');
+    } catch (error) {
+      this.toastr.error('Failed to export Markdown');
+    }
+  }
+
+  async backupAllSnippets() {
+    try {
+      const blob = await this.exportService.backupAllSnippets();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `snippets-backup-${new Date().toISOString()}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      this.toastr.success('Backup created successfully');
+    } catch (error) {
+      this.toastr.error('Failed to create backup');
+    }
+  }
+
+  async importFromGist() {
+    const gistId = prompt('Enter Gist ID:');
+    if (!gistId) return;
+
+    try {
+      const snippet = await this.exportService.importFromGithub(gistId);
+      await this.supabaseService.createCodeBin(snippet);
+      this.toastr.success('Successfully imported from GitHub Gist');
+      this.loadSnippets(); // Refresh the list
+    } catch (error) {
+      this.toastr.error('Failed to import from GitHub Gist');
+    }
+  }
+
+  async loadSnippets() {
+    try {
+      this.codeBins = await this.supabaseService.getUserCodeBins();
+      this.filteredBins = this.codeBins;
+    } catch (error) {
+      this.toastr.error('Error loading snippets');
+    }
+  }
+
+  async editBin(bin: SnipAI) {
+    try {
+      if (!bin.id) {
+        this.toastr.error('Invalid snippet');
+        return;
+      }
+      await this.router.navigate(['/edit', bin.id]);
+    } catch (error) {
+      this.toastr.error('Error navigating to edit page');
+    }
   }
 }
