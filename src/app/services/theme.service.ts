@@ -15,16 +15,16 @@ export class ThemeService {
       '(prefers-color-scheme: dark)'
     ).matches;
 
-    this.setDarkMode(
+    this.setTheme(
       savedTheme === 'dark' || (!savedTheme && systemPrefersDark)
     );
   }
 
-  toggleDarkMode(): void {
-    this.setDarkMode(!this.darkMode.value);
+  toggleTheme(): void {
+    this.setTheme(!this.darkMode.value);
   }
 
-  private setDarkMode(isDark: boolean): void {
+  private setTheme(isDark: boolean): void {
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {

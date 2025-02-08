@@ -3,6 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AIService } from '../../app/services/ai.service';
 import { ToastrService } from 'ngx-toastr';
+import {
+  TemplatesService,
+  CodeTemplate,
+} from '../../app/services/templates.service';
+import { SnipAI } from '../../app/services/supabase.service';
+import { SupabaseService } from '../../app/services/supabase.service';
+import { Router } from '@angular/router';
 
 // Remove the default import
 // import Prism from 'prismjs';
@@ -62,316 +69,161 @@ import {
     ]),
   ],
   template: `
-    <!-- Toggle Button -->
-    <button
-      (click)="togglePanel($event)"
-      class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center space-x-2 mb-4"
-    >
-      <svg
-        class="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M9.663 17h4.673M12 3c-1.023 0-2.047.394-2.817 1.164A3.993 3.993 0 008 7v4c0 .552-.448 1-1 1s-1 .448-1 1v1a1 1 0 001 1h10a1 1 0 001-1v-1c0-.552-.448-1-1-1s-1-.448-1-1V7c0-1.023-.394-2.047-1.164-2.817A3.993 3.993 0 0012 3z"
-        />
-      </svg>
-      <span>AI Assistant</span>
-      <svg
-        class="w-4 h-4 transition-transform duration-200"
-        [class.rotate-180]="isOpen"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
+    <div class="responsive-container p-4">
+      <!-- AI Assistant Panel -->
+      <div class="mb-8">
+        <button
+          (click)="togglePanel($event)"
+          class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2"
+        >
+          <span>AI Assistant</span>
+          <svg
+            class="w-4 h-4 transition-transform duration-200"
+            [class.rotate-180]="isPanelOpen"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
 
-    <!-- AI Tools Panel -->
-    <div
-      class="overflow-hidden transition-all duration-300 ease-in-out"
-      [class.max-h-0]="!isOpen"
-      [class.max-h-[1000px]]="isOpen"
-    >
-      <div
-        class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 transition-all duration-200"
-      >
-        <div class="space-y-4">
-          <!-- AI Tools Content -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Generate Code -->
+        <div
+          *ngIf="isPanelOpen"
+          class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+        >
+          <div data-tour="ai-assistant">
+            <textarea
+              [(ngModel)]="userInput"
+              rows="4"
+              placeholder="Ask me anything about coding..."
+              class="w-full p-3 rounded-lg border dark:border-gray-600 dark:bg-gray-700 mb-4"
+            ></textarea>
 
-            <!-- Inside the Generate Code section -->
-            <div class="flex space-x-2">
-              <input
-                type="text"
-                [(ngModel)]="promptText"
-                class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200"
-                placeholder="Describe what you want to create..."
-              />
-              <button
-                (click)="generateCode()"
-                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all duration-200"
+            <div class="flex gap-4 mb-4">
+              <select
+                [(ngModel)]="targetLanguage"
+                class="px-3 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700"
               >
-                Generate
-              </button>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+              </select>
+
               <button
-                (click)="clearInput()"
-                class="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                (click)="generateResponse()"
+                [disabled]="isGenerating"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
               >
-                Clear
+                {{ isGenerating ? 'Generating...' : 'Generate' }}
               </button>
             </div>
 
-            <!-- AI Actions -->
-            <div class="flex space-x-2">
-              <button
-                type="button"
-                (click)="explainCode()"
-                [disabled]="!code || (aiService.isProcessing$ | async)"
-                class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center justify-center space-x-2"
+            <!-- AI Response -->
+            <div *ngIf="aiResponse" class="mt-4">
+              <pre
+                class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg overflow-x-auto"
               >
-                <span>Explain Code</span>
-                <div
-                  *ngIf="aiService.isProcessing$ | async"
-                  class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                ></div>
-              </button>
-              <button
-                type="button"
-                (click)="improveCode()"
-                [disabled]="!code || (aiService.isProcessing$ | async)"
-                class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center space-x-2"
-              >
-                <span>Suggest Improvements</span>
-                <div
-                  *ngIf="aiService.isProcessing$ | async"
-                  class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                ></div>
-              </button>
-            </div>
+                <code [class]="'language-' + targetLanguage">{{ aiResponse }}</code>
+              </pre>
 
-            <!-- Language Translation -->
-            <div>
-              <label
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Translate To:
-              </label>
-              <div class="mt-1 flex space-x-2">
-                <select
-                  [(ngModel)]="targetLanguage"
-                  [ngModelOptions]="{ standalone: true }"
-                  class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="python">Python</option>
-                  <option value="javascript">JavaScript</option>
-                  <option value="typescript">TypeScript</option>
-                  <option value="java">Java</option>
-                </select>
+              <div class="flex gap-4 mt-4">
                 <button
-                  type="button"
-                  (click)="translateCode()"
-                  [disabled]="!code || (aiService.isProcessing$ | async)"
-                  class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:opacity-50 flex items-center space-x-2"
+                  (click)="saveGeneratedCode()"
+                  class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2"
                 >
-                  <span>Translate</span>
-                  <div
-                    *ngIf="aiService.isProcessing$ | async"
-                    class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                  ></div>
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                    />
+                  </svg>
+                  Save to Snippets
+                </button>
+                <button
+                  (click)="saveToHistory()"
+                  class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-2"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  Save to History
                 </button>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- AI Response -->
-          <div
-            *ngIf="aiResponse"
-            class="mt-4 bg-white dark:bg-gray-900 rounded-lg p-4 transition-all duration-200"
-          >
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-2 mb-2">
-              <button
-                (click)="copyToClipboard()"
-                class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center space-x-1"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                  />
-                </svg>
-                <span>Copy</span>
-              </button>
-              <button
-                (click)="applyToCodeBin()"
-                class="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 flex items-center space-x-1"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                <span>Apply to SnipAI </span>
-              </button>
-              <button
-                (click)="clearResponse()"
-                class="px-3 py-1 text-sm bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-800 flex items-center space-x-1"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  />
-                </svg>
-                <span>Clear</span>
-              </button>
-              <button
-                (click)="executeCode()"
-                [disabled]="isExecuting"
-                class="px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded hover:bg-purple-200 dark:hover:bg-purple-800 flex items-center space-x-1"
-              >
-                <div
-                  *ngIf="isExecuting"
-                  class="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"
-                ></div>
-                <svg
-                  *ngIf="!isExecuting"
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>{{ isExecuting ? 'Running...' : 'Run Code' }}</span>
-              </button>
-              <button
-                (click)="downloadCode()"
-                class="px-3 py-1 text-sm bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded hover:bg-indigo-200 dark:hover:bg-indigo-800 flex items-center space-x-1"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                <span>Download</span>
-              </button>
-              <button
-                (click)="loadTemplate()"
-                class="px-3 py-1 text-sm bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 rounded hover:bg-teal-200 dark:hover:bg-teal-800 flex items-center space-x-1"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span>Load Template</span>
-              </button>
-            </div>
+      <!-- History Section -->
+      <div class="mt-6 border-t dark:border-gray-700 pt-4">
+        <div class="mb-4">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search saved responses..."
+            class="w-full px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700"
+          />
+        </div>
 
-            <!-- Code Display with Syntax Highlighting -->
-            <pre
-              class="code-display whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 p-4 rounded bg-gray-50 dark:bg-gray-800 overflow-x-auto"
-            ></pre>
-
+        <div class="space-y-4" *ngIf="savedResponses.length > 0">
+          <h3 class="text-lg font-semibold">Saved Responses</h3>
+          <div class="space-y-4">
             <div
-              *ngIf="isTyping"
-              class="inline-block w-2 h-4 bg-blue-500 animate-pulse"
-            ></div>
+              *ngFor="let item of filteredResponses"
+              class="p-4 border rounded-lg dark:border-gray-700"
+            >
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <div class="font-medium">Prompt:</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ item.prompt }}
+                  </div>
+                  <div class="mt-2 font-medium">
+                    Language: {{ item.language }}
+                  </div>
+                </div>
+                <div class="flex gap-2 ml-4">
+                  <button
+                    (click)="loadResponse(item)"
+                    class="text-blue-600 hover:text-blue-700"
+                  >
+                    Load
+                  </button>
+                  <button
+                    (click)="saveToSnippets(item)"
+                    class="text-green-600 hover:text-green-700"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- Add a new section for History -->
-      <div class="mt-6">
-        <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-          History
-        </h3>
-        <div class="space-y-2">
-          <div
-            *ngFor="let snippet of history"
-            class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
-            (click)="loadSnippet(snippet)"
-          >
-            <pre class="text-sm text-gray-700 dark:text-gray-300">{{
-              snippet
-            }}</pre>
-          </div>
-        </div>
-      </div>
-
-      <!-- Code Output Section -->
-      <div
-        *ngIf="codeOutput"
-        class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg"
-      >
-        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Output:
-        </h4>
-        <pre
-          class="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200"
-          >{{ codeOutput }}</pre
-        >
       </div>
     </div>
   `,
@@ -383,13 +235,15 @@ export class AIToolsComponent {
   @Output() toolSelected = new EventEmitter<AITool>();
   isOpen = false;
   promptText = '';
-  targetLanguage = 'python';
+  targetLanguage = 'javascript';
   aiResponse: string | null = null;
+  userInput = '';
   displayedResponse = '';
   isTyping = false;
   typingProgress = 0;
   codeOutput: string = '';
   isExecuting: boolean = false;
+  isProcessing = false;
 
   codeTemplates = {
     python: `def main():
@@ -414,12 +268,53 @@ main();`,
 }`,
   };
 
-  constructor(public aiService: AIService, private toastr: ToastrService) {}
+  // New properties
+  codeToReview = '';
+  codeToDebug = '';
+  codeToDocument = '';
+  codeToTest = '';
+  codeForTypes = '';
+  codeToConvert = '';
+  fromLanguage = 'javascript';
+  toLanguage = 'typescript';
+  testFramework = 'jest';
+
+  // Loading states
+  isReviewing = false;
+  isDebugging = false;
+  isGeneratingDocs = false;
+  isGeneratingTests = false;
+  isGeneratingTypes = false;
+  isConverting = false;
+
+  // Add new properties
+  showTemplates = false;
+  templates: CodeTemplate[] = [];
+  filteredTemplates: CodeTemplate[] = [];
+  selectedLanguage = 'javascript';
+
+  // Add to class properties
+  searchQuery = '';
+  savedResponses: { prompt: string; response: string; language: string }[] = [];
+
+  isPanelOpen = false;
+  isGenerating = false;
+
+  constructor(
+    public aiService: AIService,
+    private toastr: ToastrService,
+    private templatesService: TemplatesService,
+    private supabaseService: SupabaseService,
+    private router: Router
+  ) {
+    this.templates = this.templatesService.getTemplates();
+    this.filterTemplates();
+  }
 
   togglePanel(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.isOpen = !this.isOpen;
+    this.isPanelOpen = !this.isPanelOpen;
   }
   characterCount = 0;
   clearInput() {
@@ -459,17 +354,24 @@ main();`,
     this.highlightCode();
   }
 
-  async generateCode() {
-    if (!this.promptText) return;
+  async generateResponse() {
+    if (!this.userInput) {
+      this.toastr.warning('Please enter a prompt');
+      return;
+    }
+
+    this.isGenerating = true;
     try {
-      const response = await this.aiService.generateCodeFromPrompt(
-        this.promptText,
-        'javascript'
+      this.aiResponse = await this.aiService.generateCodeFromPrompt(
+        this.userInput,
+        this.targetLanguage
       );
-      this.aiResponse = response;
-      await this.simulateTyping(response);
+      this.highlightCode();
     } catch (error) {
-      this.toastr.error('Error generating code');
+      this.toastr.error('Error generating response');
+      console.error('Generation error:', error);
+    } finally {
+      this.isGenerating = false;
     }
   }
 
@@ -585,18 +487,6 @@ main();`,
     }
   }
 
-  loadTemplate() {
-    const template =
-      this.codeTemplates[
-        this.targetLanguage as keyof typeof this.codeTemplates
-      ];
-    if (template) {
-      this.displayedResponse = template;
-      this.aiResponse = template;
-      this.highlightCode();
-    }
-  }
-
   downloadCode() {
     if (!this.displayedResponse) return;
 
@@ -621,23 +511,231 @@ main();`,
   }
 
   highlightCode() {
-    if (this.displayedResponse) {
-      const highlighted = Prism.highlight(
-        this.displayedResponse,
-        Prism.languages[this.targetLanguage],
-        this.targetLanguage
-      );
-      // Update the pre element with highlighted code
-      const preElement = document.querySelector('.code-display');
-      if (preElement) {
-        preElement.innerHTML = highlighted;
-      }
-    }
+    setTimeout(() => {
+      Prism.highlightAll();
+    }, 100);
   }
 
   selectTool(tool: AITool) {
     this.tools.forEach((t) => (t.isActive = false));
     tool.isActive = true;
     this.toolSelected.emit(tool);
+  }
+
+  async processRequest() {
+    try {
+      this.isProcessing = true;
+      const response = await this.aiService.generateCode(
+        this.userInput,
+        this.targetLanguage
+      );
+      this.displayedResponse = response;
+      this.highlightCode();
+    } catch (error) {
+      this.toastr.error('Error processing request');
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  async reviewCode() {
+    this.isReviewing = true;
+    try {
+      const result = await this.aiService.reviewCode(this.codeToReview);
+      this.displayedResponse = result;
+      this.highlightCode();
+    } catch (error) {
+      this.toastr.error('Error reviewing code');
+    } finally {
+      this.isReviewing = false;
+    }
+  }
+
+  async findBugs() {
+    this.isDebugging = true;
+    try {
+      const result = await this.aiService['findBugs'](this.codeToDebug);
+      this.displayedResponse = result;
+      this.highlightCode();
+    } catch (error) {
+      this.toastr.error('Error finding bugs');
+    } finally {
+      this.isDebugging = false;
+    }
+  }
+
+  async generateDocs() {
+    this.isGeneratingDocs = true;
+    try {
+      const result = await this.aiService.generateDocs(this.codeToDocument);
+      this.displayedResponse = result;
+      this.highlightCode();
+    } catch (error) {
+      this.toastr.error('Error generating documentation');
+    } finally {
+      this.isGeneratingDocs = false;
+    }
+  }
+
+  async generateTests() {
+    this.isGeneratingTests = true;
+    try {
+      const result = await this.aiService['generateTests'](
+        this.codeToTest,
+        this.testFramework
+      );
+      this.displayedResponse = result;
+      this.highlightCode();
+    } catch (error) {
+      this.toastr.error('Error generating tests');
+    } finally {
+      this.isGeneratingTests = false;
+    }
+  }
+
+  async generateTypes() {
+    this.isGeneratingTypes = true;
+    try {
+      const result = await this.aiService['generateTypes'](this.codeForTypes);
+      this.displayedResponse = result;
+      this.highlightCode();
+    } catch (error) {
+      this.toastr.error('Error generating types');
+    } finally {
+      this.isGeneratingTypes = false;
+    }
+  }
+
+  async convertCode() {
+    this.isConverting = true;
+    try {
+      const result = await this.aiService['convertCode'](
+        this.codeToConvert,
+        this.fromLanguage,
+        this.toLanguage
+      );
+      this.displayedResponse = result;
+      this.highlightCode();
+    } catch (error) {
+      this.toastr.error('Error converting code');
+    } finally {
+      this.isConverting = false;
+    }
+  }
+
+  toggleTemplates() {
+    this.showTemplates = !this.showTemplates;
+  }
+
+  filterTemplates() {
+    this.filteredTemplates = this.templates.filter(
+      (t) => t.language === this.selectedLanguage
+    );
+  }
+
+  loadTemplate(template: CodeTemplate) {
+    this.userInput = template.code;
+    this.showTemplates = false;
+    this.toastr.success('Template loaded successfully');
+  }
+
+  // When language changes
+  onLanguageChange() {
+    this.filterTemplates();
+  }
+
+  async saveGeneratedCode() {
+    try {
+      if (!this.aiResponse) {
+        this.toastr.warning('No code to save');
+        return;
+      }
+
+      const newBin: SnipAI = {
+        title: 'AI Generated Code',
+        code: this.aiResponse,
+        language: this.targetLanguage,
+        category: 'AI Generated',
+        user_id: await this.getUserId(),
+        tags: ['ai-generated', this.targetLanguage],
+        description: this.userInput,
+        is_public: false,
+      };
+
+      await this.supabaseService.createCodeBin(newBin);
+      this.toastr.success('Code saved successfully');
+      this.router.navigate(['/view']);
+    } catch (error) {
+      this.toastr.error('Error saving code');
+      console.error('Save error:', error);
+    }
+  }
+
+  private async getUserId(): Promise<string> {
+    const {
+      data: { user },
+    } = await this.supabaseService.getCurrentUser();
+    return user?.id || '';
+  }
+
+  get filteredResponses() {
+    if (!this.searchQuery) return this.savedResponses;
+    const query = this.searchQuery.toLowerCase();
+    return this.savedResponses.filter(
+      (item) =>
+        item.prompt.toLowerCase().includes(query) ||
+        item.response.toLowerCase().includes(query) ||
+        item.language.toLowerCase().includes(query)
+    );
+  }
+
+  saveToHistory() {
+    if (!this.aiResponse || !this.userInput) return;
+
+    this.savedResponses.unshift({
+      prompt: this.userInput,
+      response: this.aiResponse,
+      language: this.targetLanguage,
+    });
+
+    // Keep only last 10 responses
+    if (this.savedResponses.length > 10) {
+      this.savedResponses.pop();
+    }
+
+    this.toastr.success('Response saved to history');
+  }
+
+  loadResponse(item: { prompt: string; response: string; language: string }) {
+    this.userInput = item.prompt;
+    this.aiResponse = item.response;
+    this.targetLanguage = item.language;
+    this.highlightCode();
+  }
+
+  async saveToSnippets(item: {
+    prompt: string;
+    response: string;
+    language: string;
+  }) {
+    const newBin: SnipAI = {
+      title: 'AI Generated Code',
+      code: item.response,
+      language: item.language,
+      category: 'AI Generated',
+      user_id: await this.getUserId(),
+      tags: ['ai-generated', item.language],
+      description: item.prompt,
+      is_public: false,
+    };
+
+    try {
+      await this.supabaseService.createCodeBin(newBin);
+      this.toastr.success('Saved to snippets');
+      this.router.navigate(['/view']);
+    } catch (error) {
+      this.toastr.error('Error saving to snippets');
+      console.error('Save error:', error);
+    }
   }
 }

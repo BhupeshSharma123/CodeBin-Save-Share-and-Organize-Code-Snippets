@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { NavbarComponent } from '../components/navbar/navbar.component';
+
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { KeyboardService } from './services/keyboard.service';
 
 import { AuthGuard } from '../auth/auth.guard';
+import { NavbarComponent } from './navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
@@ -22,5 +24,18 @@ import { AuthGuard } from '../auth/auth.guard';
   `,
 })
 export class AppComponent {
-  title = 'angular-app';
+  constructor(private keyboardService: KeyboardService) {}
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Don't trigger shortcuts when typing in input fields
+    if (
+      event.target instanceof HTMLInputElement ||
+      event.target instanceof HTMLTextAreaElement
+    ) {
+      return;
+    }
+    
+    this.keyboardService.handleKeyPress(event);
+  }
 }

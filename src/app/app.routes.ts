@@ -51,12 +51,24 @@ export const routes: Routes = [
     loadComponent: () => import('../pages/password-reset/password-reset.component').then(m => m.PasswordResetComponent)
   },
 
+  // Demo route (move this before wildcard)
+  {
+    path: 'demo',
+    loadComponent: () => import('../pages/demo/demo.component').then(m => m.DemoComponent)
+  },
+
+  // Share route
+  {
+    path: 'share/:token',
+    loadComponent: () => import('../components/shared-view/shared-view.component').then(m => m.SharedViewComponent)
+  },
+
   // Default route
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   
-  // Wildcard route for 404
+  // Wildcard route for 404 (keep this last)
   {
     path: '**',
     loadComponent: () => import('../components/not-found/not-found.component').then(m => m.NotFoundComponent)
-  }
+  },
 ];

@@ -17,6 +17,23 @@ export interface SnipAI {
   updated_at?: string;
 }
 
+export interface CodeTemplate {
+  id: string;
+  name: string;
+  description: string;
+  language: string;
+  code: string;
+  tags: string[];
+  category: string;
+}
+
+export interface ShareableLink {
+  id: string;
+  code_bin_id: string;
+  access_token: string;
+  expires_at: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -117,7 +134,7 @@ export class SupabaseService {
 
   async deleteCodeBin(id: string): Promise<void> {
     const { error } = await this.supabase
-      .from('codebins')
+      .from('code_bins')
       .delete()
       .eq('id', id);
 
@@ -312,5 +329,66 @@ export class SupabaseService {
 
     if (error) throw error;
     return data;
+  }
+
+  async saveTemplate(template: CodeTemplate): Promise<void> {
+    const { error } = await this.supabase.from('templates').insert([template]);
+
+    if (error) throw error;
+  }
+
+  async getCustomTemplates(): Promise<CodeTemplate[]> {
+    const { data, error } = await this.supabase
+      .from('templates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async createShareableLink(
+    codeBinId: string,
+    expiresInDays = 7
+  ): Promise<string> {
+    const accessToken = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+    const { data, error } = await this.supabase
+      .from('shareable_links')
+      .insert({
+        code_bin_id: codeBinId,
+        access_token: accessToken,
+        expires_at: expiresAt.toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return `${window.location.origin}/share/${accessToken}`;
+  }
+
+  async getSharedCodeBin(accessToken: string): Promise<SnipAI> {
+    const { data: linkData, error: linkError } = await this.supabase
+      .from('shareable_links')
+      .select('code_bin_id, expires_at')
+      .eq('access_token', accessToken)
+      .single();
+
+    if (linkError) throw new Error('Invalid or expired link');
+    if (new Date(linkData.expires_at) < new Date()) {
+      throw new Error('Link has expired');
+    }
+
+    const { data: binData, error: binError } = await this.supabase
+      .from('code_bins')
+      .select()
+      .eq('id', linkData.code_bin_id)
+      .single();
+
+    if (binError) throw new Error('Code bin not found');
+    return binData;
   }
 }

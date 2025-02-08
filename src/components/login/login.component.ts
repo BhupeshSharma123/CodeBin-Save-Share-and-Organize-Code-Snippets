@@ -12,8 +12,9 @@ import { ToastrService } from 'ngx-toastr';
 import { SupabaseService } from '../../app/services/supabase.service';
 import { take } from 'rxjs/operators';
 import { RouterLink } from '@angular/router';
-import { NavbarComponent } from '../navbar/navbar.component';
+
 import { ActivatedRoute } from '@angular/router';
+import { NavbarComponent } from '../../app/navbar/navbar.component';
 
 @Component({
   selector: 'app-login',

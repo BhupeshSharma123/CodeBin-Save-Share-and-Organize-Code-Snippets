@@ -146,10 +146,10 @@ import { MonacoEditorService } from '../../app/services/monaco-editor.service';
 
             <button
               (click)="generateCode()"
-              [disabled]="!promptText"
-              class="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              [disabled]="isGenerating"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
-              Generate
+              {{ isGenerating ? 'Generating...' : 'Generate Code' }}
             </button>
           </div>
         </div>
@@ -425,17 +425,24 @@ export class CodeBinComponent implements OnInit {
   }
 
   async generateCode() {
-    if (!this.promptText) return;
-    this.isGenerating = true;
     try {
-      const code = await this.aiService.generateCodeFromPrompt(
+      if (!this.promptText) {
+        this.toastr.warning('Please enter a prompt first');
+        return;
+      }
+
+      this.isGenerating = true;
+      const response = await this.aiService.generateCodeFromPrompt(
         this.promptText,
         this.generationLanguage
       );
-      this.binForm.patchValue({ code });
-      this.aiResponse = null;
+      if (response) {
+        this.binForm.patchValue({ code: response });
+        this.toastr.success('Code generated successfully');
+      }
     } catch (error) {
       this.toastr.error('Error generating code');
+      console.error('Generation error:', error);
     } finally {
       this.isGenerating = false;
     }
