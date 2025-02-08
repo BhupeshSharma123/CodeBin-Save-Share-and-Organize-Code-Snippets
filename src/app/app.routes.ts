@@ -1,57 +1,62 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from '../components/login/login.component';
-import { SignupComponent } from '../components/signup/signup.component';
-import { NotFoundComponent } from '../components/not-found/not-found.component';
-import { CodeBinComponent } from '../components/code-bin/code-bin.component';
-import { DataViewComponent } from '../components/data-view/data-view.component';
-import { HomeComponent } from '../components/home/home.component';
 import { AuthGuard } from '../auth/auth.guard';
-import { AboutComponent } from '../pages/about/about.component';
-import { AIToolsPageComponent } from '../pages/ai-tools-page/ai-tools-page.component';
-import { PasswordResetComponent } from '../pages/password-reset/password-reset.component';
 
 export const routes: Routes = [
   // Public routes
-  { path: 'login', component: LoginComponent },
-  { path: 'signup', component: SignupComponent },
-  { path: 'about', component: AboutComponent },
-  { path: 'ai-tools-page', component: AIToolsPageComponent }, // Add this before wildcard route
+  {
+    path: 'login',
+    loadComponent: () => import('../components/login/login.component').then(m => m.LoginComponent)
+  },
+  {
+    path: 'signup',
+    loadComponent: () => import('../components/signup/signup.component').then(m => m.SignupComponent)
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('../pages/about/about.component').then(m => m.AboutComponent)
+  },
+  {
+    path: 'ai-tools-page',
+    loadComponent: () => import('../pages/ai-tools-page/ai-tools-page.component').then(m => m.AIToolsPageComponent)
+  },
 
   // Protected routes
   {
     path: 'home',
-    component: HomeComponent,
-    data: { requiresAuth: true },
+    loadComponent: () => import('../components/home/home.component').then(m => m.HomeComponent),
+    canActivate: [AuthGuard]
   },
   {
     path: 'view/:id',
-    component: DataViewComponent,
-    canActivate: [AuthGuard],
+    loadComponent: () => import('../components/data-view/data-view.component').then(m => m.DataViewComponent),
+    canActivate: [AuthGuard]
   },
   {
     path: 'view',
-    component: DataViewComponent,
-    canActivate: [AuthGuard],
+    loadComponent: () => import('../components/data-view/data-view.component').then(m => m.DataViewComponent),
+    canActivate: [AuthGuard]
   },
   {
     path: 'edit/:id',
-    component: CodeBinComponent,
-    canActivate: [AuthGuard],
+    loadComponent: () => import('../components/code-bin/code-bin.component').then(m => m.CodeBinComponent),
+    canActivate: [AuthGuard]
   },
   {
     path: 'bin',
-    component: CodeBinComponent,
-    canActivate: [AuthGuard],
+    loadComponent: () => import('../components/code-bin/code-bin.component').then(m => m.CodeBinComponent),
+    canActivate: [AuthGuard]
   },
-
-  // Default route (redirect to home)
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-
-  // Wildcard route for 404 (should always be last)
-  { path: '**', component: NotFoundComponent },
-
   {
     path: 'reset-password',
-    component: PasswordResetComponent,
+    loadComponent: () => import('../pages/password-reset/password-reset.component').then(m => m.PasswordResetComponent)
   },
+
+  // Default route
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  
+  // Wildcard route for 404
+  {
+    path: '**',
+    loadComponent: () => import('../components/not-found/not-found.component').then(m => m.NotFoundComponent)
+  }
 ];
