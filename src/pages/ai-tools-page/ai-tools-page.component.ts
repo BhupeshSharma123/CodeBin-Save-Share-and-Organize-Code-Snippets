@@ -18,7 +18,7 @@ import {
 @Component({
   selector: 'app-ai-tools-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, AIToolsComponent, MarkdownModule],
+  imports: [CommonModule, FormsModule, AIToolsComponent],
   animations: [
     trigger('fadeInUp', [
       transition(':enter', [

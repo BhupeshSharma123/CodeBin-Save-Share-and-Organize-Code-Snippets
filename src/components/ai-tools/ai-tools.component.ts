@@ -3,7 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AIService } from '../../app/services/ai.service';
 import { ToastrService } from 'ngx-toastr';
-import Prism from 'prismjs';
+
+// Remove the default import
+// import Prism from 'prismjs';
+
+// Add this instead
+declare const Prism: any;
+import 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-javascript';
@@ -17,12 +23,11 @@ import {
   animate,
   state,
 } from '@angular/animations';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-ai-tools',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule],
+  imports: [CommonModule, FormsModule],
   animations: [
     trigger('cardHover', [
       state(

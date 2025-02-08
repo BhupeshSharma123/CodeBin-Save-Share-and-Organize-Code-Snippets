@@ -11,6 +11,8 @@ import { AIService } from '../../app/services/ai.service';
 
 @Component({
   selector: 'app-home',
+  standalone: true,
+  imports: [RouterLink, CommonModule, NavbarComponent, FormsModule],
   template: `
     <div
       class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800"
@@ -290,7 +292,6 @@ import { AIService } from '../../app/services/ai.service';
     </div>
   `,
   styleUrls: ['./home.component.css'],
-  imports: [RouterLink, CommonModule, NavbarComponent, FormsModule],
 })
 export class HomeComponent implements OnInit {
   recentBins: SnipAI[] = [];
