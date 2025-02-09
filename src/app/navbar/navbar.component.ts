@@ -6,6 +6,7 @@ import { TourService } from '../services/tour.service';
 import { TourOverlayComponent } from '../../components/tour-overlay/tour-overlay.component';
 import { SupabaseService } from '../services/supabase.service';
 import { Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -127,26 +128,56 @@ import { Router } from '@angular/router';
                 (click)="toggleProfileMenu()"
                 class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white">
+                <div
+                  class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white"
+                >
                   {{ userInitial }}
                 </div>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
 
               <!-- Dropdown Menu -->
-              <div *ngIf="isProfileMenuOpen" 
-                   class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50">
-                <a routerLink="/profile" 
-                   class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div
+                *ngIf="isProfileMenuOpen"
+                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50"
+              >
+                <div
+                  class="px-4 py-2 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <div class="font-medium text-gray-800 dark:text-white">
+                    {{ userName }}
+                  </div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ userEmail }}
+                  </div>
+                </div>
+                <a
+                  (click)="viewProfile()"
+                  class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                >
                   Profile
                 </a>
-                <a routerLink="/settings" 
-                   class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <a
+                  (click)="viewSettings()"
+                  class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                >
                   Settings
                 </a>
-                <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                <div
+                  class="border-t border-gray-200 dark:border-gray-700"
+                ></div>
                 <button
                   (click)="logout()"
                   class="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -269,14 +300,29 @@ export class NavbarComponent {
     { path: '/about', label: 'About' },
   ];
 
+  private userSubject = new BehaviorSubject<any>(null);
+  user$ = this.userSubject.asObservable();
+
   constructor(
     public tourService: TourService,
     private supabaseService: SupabaseService,
     private router: Router
   ) {
-    this.supabaseService.user$.subscribe(user => {
+    this.supabaseService.user$.subscribe(async (user) => {
       if (user) {
         this.userInitial = user.email?.[0].toUpperCase() || 'U';
+        try {
+          const { data: profile } = await this.supabaseService.getProfile(
+            user.id
+          );
+          this.userSubject.next({ ...user, ...profile });
+          this.userName =
+            profile?.full_name || user.email?.split('@')[0] || 'User';
+        } catch (error) {
+          console.error('Error loading profile:', error);
+        }
+      } else {
+        this.userSubject.next(null);
       }
     });
   }
@@ -307,14 +353,19 @@ export class NavbarComponent {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
-    if (this.isProfileMenuOpen && !(event.target as HTMLElement).closest('.relative')) {
+    if (
+      this.isProfileMenuOpen &&
+      !(event.target as HTMLElement).closest('.relative')
+    ) {
       this.isProfileMenuOpen = false;
     }
   }
 
   async logout() {
     try {
+      this.isProfileMenuOpen = false;
       await this.supabaseService.signOut();
+      this.userSubject.next(null);
       this.router.navigate(['/login']);
     } catch (error) {
       console.error('Error logging out:', error);
@@ -323,5 +374,15 @@ export class NavbarComponent {
 
   startTour() {
     this.tourService.startTour();
+  }
+
+  async viewProfile() {
+    this.isProfileMenuOpen = false;
+    this.router.navigate(['/profile']);
+  }
+
+  async viewSettings() {
+    this.isProfileMenuOpen = false;
+    this.router.navigate(['/settings']);
   }
 }
